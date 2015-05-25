@@ -4,7 +4,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
- * This is the server interface.
+ * 
  * 
  * @author Haiyang Sun
  *
@@ -46,4 +46,14 @@ public interface LibraryServerInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public String getNonRetuners(String adminUsername, String adminPassword) throws RemoteException;
+	
+	/**
+	 * 
+	 * @param username
+	 * @param bookName
+	 * @param numOfDays
+	 * @return
+	 * @throws RemoteException
+	 */
+	public boolean setDuration (String username,String bookName,int numOfDays) throws RemoteException;	
 }
