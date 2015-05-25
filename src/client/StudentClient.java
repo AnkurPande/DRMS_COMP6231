@@ -2,6 +2,7 @@ package client;
 
 import java.util.Scanner;
 import java.rmi.Naming;
+//add the library containing all the models here
 
 public class StudentClient 
 {
