@@ -11,7 +11,7 @@ public class UDPSocket {
 	
 	public void sendResponse(byte[] buf, int length, InetAddress address, int port){
 		try {
-		socket = new DatagramSocket(udpPort);
+		socket = new DatagramSocket(Port);
 		DatagramPacket reply = new DatagramPacket(buf,buf.length,address,port);
 		socket.send(reply);
 		} catch (Exception e) {
@@ -23,9 +23,9 @@ public class UDPSocket {
 		}
 	}
 	
-	public String recieveRequest(byte buf[],int udpPort){
+	public String recieveRequest(byte buf[],int Port){
 		try {
-			socket = new DatagramSocket(udpPort);
+			socket = new DatagramSocket(Port);
 			DatagramPacket recievedPacket = new DatagramPacket(buf,buf.length);
 			socket.receive(recievedPacket);
 			data = new String(recievedPacket.getData());
