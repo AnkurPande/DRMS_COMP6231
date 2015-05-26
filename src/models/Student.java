@@ -253,9 +253,6 @@ public class Student {
 	 */
 	public void reserveBook(String book_id, int duration)
 	{	
-		if(duration == 0)
-			duration = 14; // default duration for a book if none is provided
-		
 		this.books.put(book_id, duration);
 	}
 	
