@@ -1,21 +1,23 @@
 package server;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-
-
-
-
-
-
 
 import models.Book;
 import models.Student;
@@ -30,6 +32,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	
 	private static List<Book> bookshelf;
 	private static Map<String, Map<String, Student>> studentData;
+	private static List<Integer> listOfUDPPorts = new ArrayList<Integer>();
 	public static final int DEFAULT_DURATION = 14;
 	
 	
@@ -41,6 +44,19 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		this.portOfRMI = portOfRMI;
 		this.portOfUDP = portOfUDP;
 		
+		LibraryServer.listOfUDPPorts.add(4445);
+		LibraryServer.listOfUDPPorts.add(4447);
+		LibraryServer.listOfUDPPorts.add(4449);
+		
+		System.out.println(this.nameOfServer + " server is up!");
+		try{
+			File f = new File(this.nameOfServer +"_log.txt");
+			if(!f.exists())
+				f.createNewFile();
+		}catch(IOException e) {
+			e.getMessage();
+		}
+			
 	}
 
 	@Override
@@ -52,6 +68,9 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			
 			Student student = new Student(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);
 			this.addStudent(student);
+			
+			log(username, "Create a new account.");
+			
 			return true;
 		}
 		return false;
@@ -94,6 +113,8 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			
 			book.setNumberCopies(book.getNumberCopies() -1);
 			
+			log(username, "Reserve a book. " + "Book name: "+ bookName + " Book author: " + authorName);
+			
 			message = "Reserve success.";
 			System.out.println(message);
 			return message;
@@ -101,10 +122,48 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	}
 
 	@Override
-	public String getNonRetuners(String adminUsername, String adminPassword)
+	public String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays)
 			throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		// check admin password
+		
+		
+		StringBuilder finalResult = new StringBuilder();
+		finalResult.append(checkNonRetuners(numDays));
+		
+		for(int port: listOfUDPPorts) {
+			if(port != this.portOfUDP) {
+				
+				DatagramSocket socket = null;
+				String resultFromOther = "";
+				
+				try {
+					socket = new DatagramSocket();
+					InetAddress host = InetAddress.getByName("localhost");
+					
+
+					byte[] message = numDays.getBytes();
+					DatagramPacket sendPacket = new DatagramPacket(message, message.length, host, port);
+					socket.send(sendPacket);
+					
+					byte[] buffer = new byte[1000];
+					DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
+					socket.receive(receivedPacket);
+					
+					resultFromOther = new String(receivedPacket.getData());
+					finalResult.append(resultFromOther);
+				
+				} catch (SocketException e) {
+					System.out.println("Socket: " + e.getMessage());
+				} catch (IOException e) {
+					System.out.println("IO: " + e.getMessage());
+				} finally {
+					if (socket != null) socket.close();
+				}
+			}
+		}
+		
+		log(adminUsername, "Get non Returners for " + numDays + "days.");
+		return finalResult.toString();
 	}
 
 	@Override
@@ -122,8 +181,21 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	}
 	
 	public String checkNonRetuners(String numDays) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		int numberOfDays = Integer.valueOf(numDays);
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.getNameOfServer() + " : ");
+		for(Map<String, Student> value: studentData.values()) {
+			for(Student student: value.values()) {
+				for(int duration: student.getBooks().values()) {
+					if(duration - 14 == numberOfDays) {
+						sb.append(student.getFirstName() + " " + student.getLastName() + " " + student.getPhoneNumber() + "\n");
+					}
+				}
+			}
+		}
+		sb.append( "..." + "\n");
+		return sb.toString();
 	}
 	
 	//------------DATA-------------
@@ -165,12 +237,13 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 
 	@Override
 	public void run() {
+		
+		
 		try{
 			Remote obj = UnicastRemoteObject.exportObject(this, this.portOfRMI);
 			Registry registry = LocateRegistry.createRegistry(this.portOfRMI);
 			registry.bind(this.nameOfServer, obj);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		
@@ -182,6 +255,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	
 	public static void main(String[] args) {
 		
+		
 		LibraryServer serverOfConcordia = new LibraryServer("Concordia", 4444, 4445);
 		new Thread(serverOfConcordia).start();
 		LibraryServer serverOfMcGill = new LibraryServer("McGill", 4446, 4447);
@@ -190,7 +264,20 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		new Thread(serverOfUdeM).start();
 	}
 	
-	
+	//------------Log----------------
+	public void log(String username,String activity)  {
+		try{
+			File f = new File(this.nameOfServer+"_log.txt");
+			FileWriter fw = new FileWriter(f,true);
+			fw.write(new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) +" " +  username+": "+activity);
+			fw.write("\r\n");
+			fw.flush();
+			fw.close();
+			
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 
 	//------------Getters & Setters ----------------

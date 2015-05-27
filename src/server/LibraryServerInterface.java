@@ -45,7 +45,7 @@ public interface LibraryServerInterface extends Remote {
 	 * @return
 	 * @throws RemoteException
 	 */
-	public String getNonRetuners(String adminUsername, String adminPassword) throws RemoteException;
+	public String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays) throws RemoteException;
 	
 	/**
 	 * 
