@@ -36,7 +36,7 @@ public interface LibraryServerInterface extends Remote {
 	 * @return
 	 * @throws RemoteException
 	 */
-	public boolean reserveBook(String username, String password, String bookName, String authorName) throws RemoteException;
+	public String reserveBook(String username, String password, String bookName, String authorName) throws RemoteException;
 	
 	/**
 	 * 
