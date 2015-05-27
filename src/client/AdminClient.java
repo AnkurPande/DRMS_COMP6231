@@ -246,13 +246,14 @@ public class AdminClient {
 		System.out.println("=============================");
 		System.out.println("Please select an Option......");
 		System.out.println("1. Get Non Retuners ");
-		System.out.println("2. Debug tools Set Duration");
+		//System.out.println("2. Debug tools Set Duration");
 		System.out.println("3. Test multiple thread get Non Retuners");
 		System.out.println("4. Exit");
 		System.out.println("==============================");
 	}
 	
 	
+	//This is mendatory if need then we will make it together 
 	/*
 	public static void main(String[] args)
 	{
@@ -328,7 +329,6 @@ public class AdminClient {
 		try
 		{
 			AdminClient adminclient = new AdminClient();
-			//createFold();
 			System.setSecurityManager(new RMISecurityManager());		
 			int userChoice=0;
 			Scanner scan =  new Scanner(System.in);
