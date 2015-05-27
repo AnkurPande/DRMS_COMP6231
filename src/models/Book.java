@@ -13,9 +13,17 @@ public class Book {
 	private String bookAuthor = null;
 	private int numberCopies = 0;
 	
+	/*
+	 * Default Book constructor
+	 */
+	public Book()
+	{
+		
+	}
+	
 	
 	/*
-	 * Book constructor
+	 * Book constructor overloading
 	 */
 	public Book(String bookName, String BookAuthor, int numberCopies)
 	{		

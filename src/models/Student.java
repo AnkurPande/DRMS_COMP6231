@@ -31,7 +31,16 @@ public class Student {
 		
 	
 	/*
-	 * Student constructor
+	 * Default student constructor
+	 */
+	public Student()
+	{
+		
+	}
+	
+	
+	/*
+	 * Student constructor overloading
 	 */
 	public Student(String studentID, String firstName, String lastName, String emailAddress, String phoneNumber, 
 			String eduInstitute, String userName, String password) throws Exception
@@ -54,7 +63,7 @@ public class Student {
 	/**
 	 * This function will return student's ID
 	 */
-	public String getStudent_id() 
+	public String getStudentID() 
 	{
 		return this.studentID;
 	}
