@@ -17,23 +17,8 @@ public class Book {
 	/*
 	 * Book constructor
 	 */
-	public Book(String bookName, String BookAuthor, int numberCopies) throws Exception
-	{
-		if (bookName.isEmpty()) 
-		{ 
-			throw new Exception("Please enter a book name"); 
-		}
-		
-		if (bookAuthor.isEmpty()) 
-		{ 
-			throw new Exception("Please enter the autho name of the book"); 
-		}
-		
-		if (numberCopies < 0) 
-		{ 
-			throw new Exception("Please enter number of copies available for the book"); 
-		}
-		
+	public Book(String bookName, String BookAuthor, int numberCopies)
+	{		
 		this.bookName = bookName;
 		this.bookAuthor = BookAuthor;
 		this.numberCopies = numberCopies;
