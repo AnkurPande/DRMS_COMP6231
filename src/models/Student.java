@@ -31,47 +31,20 @@ public class Student {
 		
 	
 	/*
-	 * Student constructor
+	 * Default student constructor
+	 */
+	public Student()
+	{
+		
+	}
+	
+	
+	/*
+	 * Student constructor overloading
 	 */
 	public Student(String studentID, String firstName, String lastName, String emailAddress, String phoneNumber, 
 			String eduInstitute, String userName, String password) throws Exception
 	{
-		
-		if (studentID.isEmpty()) 
-		{ 
-			throw new Exception("Please enter student ID"); 
-		}
-		
-		if (firstName.isEmpty()) 
-		{ 
-			throw new Exception("Please enter student's first name"); 
-		}
-		
-		if (lastName.isEmpty()) 
-		{ 
-			throw new Exception("Please enter student's last name"); 
-		}
-		
-		if (userName.isEmpty()) 
-		{ 
-			throw new Exception("Please enter student's username for login purposes"); 
-		}
-		
-		if(userName.length() < 6 || userName.length() > 15)
-		{
-			throw new Exception("The username should be min. of 6 characters or max 15 characters");
-		}
-		
-		if (password.isEmpty()) 
-		{ 
-			throw new Exception("Please enter student's password for login purposes"); 
-		}
-		
-		if(password.length() < 8)
-		{
-			throw new Exception("Password should be atleast of 8 characters");
-		}
-
 		this.studentID = studentID;
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -90,7 +63,7 @@ public class Student {
 	/**
 	 * This function will return student's ID
 	 */
-	public String getStudent_id() 
+	public String getStudentID() 
 	{
 		return this.studentID;
 	}
