@@ -1,5 +1,6 @@
 package server;
 
+import java.net.DatagramSocket;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -8,6 +9,9 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+
+
 
 
 
@@ -22,9 +26,13 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	private int portOfRMI;
 	private int portOfUDP;
 	
+	private UDPSocket1 socket;
+	
 	private static List<Book> bookshelf;
 	private static Map<String, Map<String, Student>> studentData;
 	public static final int DEFAULT_DURATION = 14;
+	
+	
 	
 	
 	public LibraryServer(String nameOfServer, int portOfRMI, int portOfUDP) {
@@ -112,7 +120,11 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		}
 		return false;
 	}
-
+	
+	public String checkNonRetuners(String numDays) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	//------------DATA-------------
 	public Student getStudent(String username) {
@@ -161,6 +173,11 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+		
+		this.socket = new UDPSocket1(this);
+		socket.start();
+		
+		
 	}
 	
 	public static void main(String[] args) {
@@ -172,4 +189,59 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		LibraryServer serverOfUdeM = new LibraryServer("UdeM", 4448, 4449);
 		new Thread(serverOfUdeM).start();
 	}
+	
+	
+	
+
+	//------------Getters & Setters ----------------
+
+	public String getNameOfServer() {
+		return nameOfServer;
+	}
+
+	public void setNameOfServer(String nameOfServer) {
+		this.nameOfServer = nameOfServer;
+	}
+
+	public int getPortOfRMI() {
+		return portOfRMI;
+	}
+
+	public void setPortOfRMI(int portOfRMI) {
+		this.portOfRMI = portOfRMI;
+	}
+
+	public int getPortOfUDP() {
+		return portOfUDP;
+	}
+
+	public void setPortOfUDP(int portOfUDP) {
+		this.portOfUDP = portOfUDP;
+	}
+
+	public UDPSocket1 getSocket() {
+		return socket;
+	}
+
+	public void setSocket(UDPSocket1 socket) {
+		this.socket = socket;
+	}
+
+	public static List<Book> getBookshelf() {
+		return bookshelf;
+	}
+
+	public static void setBookshelf(List<Book> bookshelf) {
+		LibraryServer.bookshelf = bookshelf;
+	}
+
+	public static Map<String, Map<String, Student>> getStudentData() {
+		return studentData;
+	}
+
+	public static void setStudentData(Map<String, Map<String, Student>> studentData) {
+		LibraryServer.studentData = studentData;
+	}
+
+	
 }
