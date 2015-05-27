@@ -63,12 +63,21 @@ public class AdminClient {
 	/**
 	 * <h1>Parameter Constructor</h1> 
 	 * @param EDU
+	 * 		String Variable for Education Institution
 	 */
-	
 	public AdminClient(String EDU) {
 		EDU_Institution = EDU;
 	}
 
+	/**
+	 * This Library System have 3 server 
+	 * 		1.Concordia
+	 * 		2.Vanier
+	 * 		3.McGill 
+	 * 		and this function help to find out the particular server name..	
+	 * @param EDU
+	 * @return
+	 */
 	public static String FindServer(String EDU){
 		String s = EDU;
 		String server;
@@ -76,8 +85,8 @@ public class AdminClient {
 			server = "2020/Concordia-server";
 		else if(s.equals("Vanier"))
 			server = "2021/Vanier-server";
-		else if(s.equals("Dawson"))
-			server = "2022/Dawson-server";
+		else if(s.equals("McGill"))
+			server = "2022/McGill-server";
 		else
 		{
 			server = "server is not found";
@@ -117,6 +126,15 @@ public class AdminClient {
 	}
 	
 	
+	/**
+	 * <p>
+	 * 		This function lists all the students’ First Name, Last Name and Phone Number who have not returned
+			the books with NumDays past their loan date in all the three educational institutions. The
+			admin File is updated with this information. The admin can then pass that information
+			to student to remind them about the book loan.
+	 * </p>
+	 * @param scan
+	 */
 	public void getNonRetuners(Scanner scan)
 	{
 		String input = null;
@@ -151,6 +169,14 @@ public class AdminClient {
 		}
 	}
 	
+	/**
+	 * This function save the log in file
+	 * 
+	 * @param filename
+	 * 		  New File Name
+	 * @param stream
+	 * 		  information that want to write in new File
+	 */
 	public void log(String filename,String stream) {
 			try{
 					File f = new File(filename);
@@ -168,6 +194,9 @@ public class AdminClient {
 	}
 	
 	/**
+	 * <p> This Function is useful for see the book information about who 
+	 * took that book and plus remaining day left for borrow the books
+	 * </p>
 	 * 
 	 * @param scan
 	 */
@@ -207,7 +236,9 @@ public class AdminClient {
 	}
 	
 	
-	
+	/**
+	 * Console Display Function 
+	 */
 	public static void DisplayMenuList()
 	{
 		System.out.println("=============================");
@@ -264,10 +295,10 @@ public class AdminClient {
 			case 3:
 				AdminClient admin_concordia = new AdminClient("Concordia");
 				AdminClient admin_vanier = new AdminClient("Vanier");
-				AdminClient admin_dawson = new AdminClient("Dawson");
+				AdminClient admin_McGill = new AdminClient("McGill");
 				admin_concordia.start();
 				admin_vanier.start();
-				admin_dawson.start();
+				admin_McGill.start();
 				break;
 			case 4:
 				System.out.println("Have a nice day");
@@ -287,6 +318,11 @@ public class AdminClient {
 	*/
 	
 	
+	/**
+	 * void main Function
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args)
 	{
 		try
@@ -329,10 +365,10 @@ public class AdminClient {
 			case 3:
 				AdminClient admin_concordia = new AdminClient("concordia");
 				AdminClient admin_vanier = new AdminClient("vanier");
-				AdminClient admin_dawson = new AdminClient("dawson");
+				AdminClient admin_McGill = new AdminClient("McGill");
 				admin_concordia.Start();
 				admin_vanier.Start();
-				admin_dawson.Start();
+				admin_McGill.Start();
 				break;
 			case 4:
 				System.out.println("Have a nice day");
@@ -348,6 +384,11 @@ public class AdminClient {
 	
 	}
 	
+	/**
+	 * This function start the student function 
+	 * 
+	 * @link AdminClient.Test_GetStudentStatus()
+	 */
 	public void Start()
 	{
 		Test_GetStudentStatus();
