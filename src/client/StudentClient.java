@@ -57,10 +57,30 @@ public class StudentClient
         
       }
       
-      student.setUsername(userName);
-      student.setPassword(password);
       
-      return true;
+      if(server.getStudent(userName) != null)
+      {
+      	  if(server.getStudent(userName).getPassword().equals(password))
+      	  {
+      	  	return true;
+      	  }
+      	  else
+      	  {
+      	  	System.out.println("Wrong password");
+      	  	return false;
+      	  }
+      }
+      else
+      {
+      	  System.out.println("You are not registered as a user!! Please create your account now");
+      	  System.out.println();
+      	  student.setUserName(userName);
+      	  student.setPassword(password);
+      	  if(createAccount()) return true;
+      	  
+      }
+      
+      return false;
       
    }
    
@@ -140,7 +160,9 @@ public class StudentClient
       System.out.println("List of Books in The Library:");
       System.out.println();
       
-      ArrayList<Book> bookList = server.getBooks(); //TODO review this statement
+      List<Book> list = server.getBookShelf();
+      
+      Book[] bookList = list.toArray(list.size()); 
       
       //Prints all the books of the Library
       for(int i = 0; i<bookList.length(); i++)
@@ -166,7 +188,7 @@ public class StudentClient
             switch(choice)
             {
                case 1:
-                 // TODO if available, add book one to student
+                 // TODO check the response of the server before writing to the log
                  if(bookList[0] >0) 
                  {
                       server.reserveBook(student.getUserName(),student.getPassword(),bookList[0].getName(),booList[0].getAuthor());
@@ -180,7 +202,7 @@ public class StudentClient
                   break;
                   
                case 2:
-                  // TODO if available, add book two to student
+                  // TODO check the response of the server before writing to the log
                   if(bookList[1] >0) 
                   {
                       server.reserveBook(student.getUserName(),student.getPassword(),bookList[1].getName(),booList[1].getAuthor());
@@ -194,7 +216,7 @@ public class StudentClient
                   break;
                   
                case 3:
-                  // TODO if available, add book three to student
+                  // TODO check the response of the server before writing to the log
                   if(bookList[2] >0) 
                   {
                       server.reserveBook(student.getUserName(),student.getPassword(),bookList[2].getName(),booList[2].getAuthor());
@@ -208,7 +230,7 @@ public class StudentClient
                   break;
                   
                case 4:
-                  // TODO if available, add book four to student
+                  // TODO check the response of the server before writing to the log
                   if(bookList[3] >0) 
 	          {
 	              server.reserveBook(student.getUserName(),student.getPassword(),bookList[3].getName(),booList[3].getAuthor());
@@ -222,7 +244,7 @@ public class StudentClient
                   break;
                   
                case 5:
-                  // TODO if available, add book five to student
+                  // TODO check the response of the server before writing to the log
                   if(bookList[4] >0) 
                   {
                   	server.reserveBook(student.getUserName(),student.getPassword(),bookList[4].getName(),booList[4].getAuthor());
@@ -236,7 +258,7 @@ public class StudentClient
                   break;
                   
                case 6:
-                  // TODO if available, add book six to student
+                  // TODO check the response of the server before writing to the log
                   if(bookList[5] >0) 
                   {
                   	server.reserveBook(student.getUserName(),student.getPassword(),bookList[5].getName(),booList[5].getAuthor());
@@ -250,7 +272,7 @@ public class StudentClient
                   break;
                   
                case 7:
-                  // TODO if available, add book seven to student
+                  // TODO check the response of the server before writing to the log
                   if(bookList[6] >0) server.reserveBook(student.getUserName(),student.getPassword(),bookList[6].getName(),booList[6].getAuthor());
                   {
                   	string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
@@ -321,13 +343,13 @@ public class StudentClient
          }
       }
        
-      
+     if(aStudent.login())
+     {
          System.out.println();
          System.out.println("Choose an option:");
          System.out.println();
          System.out.println("1- Reserve a Book.");
-         System.out.println("2- Create an Account");
-          System.out.println("3- Exit");
+          System.out.println("2- Exit");
          
          valid = false;
          
@@ -339,18 +361,11 @@ public class StudentClient
                switch(choice)
                {
                   case 1:
-                     aStudent.login();
                      aStudent.reserveBook();
                      valid = true;
                      break;
-                     
-                  case 2:
-                     aStudent.login();
-                     aStudent.createAccount();
-                     valid = true;
-                     break;
                   
-                  case 3:
+                  case 2:
                      System.out.println("Thank you for visiting the online Library!!");
                      System.out.println("See you soon!!");
                      System.in.close();
@@ -359,7 +374,7 @@ public class StudentClient
                      break;
             
                   default:
-                     System.out.println("please choose options 1, 2 or 3 only!!");
+                     System.out.println("please choose options 1 or 2 only!!");
                      valid = false;
                 }
          }
@@ -368,6 +383,7 @@ public class StudentClient
             System.out.println("Invalid input!!! Please enter an integer");
          }
       }
+    }
       
    }
    
