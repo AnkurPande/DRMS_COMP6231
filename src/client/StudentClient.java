@@ -1,14 +1,21 @@
 package client;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.rmi.Naming;
-//add the library containing all the models here
+import java.rmi.RMISecurityManager;
+import Models.*;
 
 public class StudentClient 
 {
    private Scanner scan;
    private Student student;
    private LibraryServerInterface server;
+   private FileWriter myWriter;
+   private File clientLogFolder;
    
    StudentClient(String institution)
    {
@@ -16,6 +23,8 @@ public class StudentClient
       student = new Student();
       server = (LibraryServerInterface) Naming.lookup("Registry path here with name of the institution");
       student.setInstitution(institution);
+      clientLogFolder = new File("clientLog");
+      if(!folder.exist()) clientLogFolder.mkdir();
    }
    
    
@@ -47,28 +56,28 @@ public class StudentClient
          if(password.length() == 0) System.out.println("The password field is empty!!!");
         
       }
-      while(userName.length() < 6 || userName.length() > 15 || password.length() < 8)
       
-      if(server.login(userName,password)) // inputs are valid, check credential
-      {
-         //valid credentials
-         //show students options or menu (reserve books)
-         return true;
-      }
-      else
-      {
-         System.out.println("Login details do not exist...");
-         System.out.println("Create your account now:");
-         
-         if(createAccount(userName,password)) return true;
-      }
+      student.setUsername(userName);
+      student.setPassword(password);
       
-      return false;
+      return true;
       
    }
    
-   private bool createAccount(String userName, String password)
+   public void logFile(String fileName, String logInfo)
    {
+   	File clientFile = new File("clientLog",fileName); 
+   	if(!clientFile.exists()) client.createNewFile();
+   	
+   	myWriter = new FileWriter(clientFile,true);
+   	myWriter.write(logInfo+"\n");
+   	myWriter.flush();
+   	myWriter.close();
+   }
+   
+   private bool createAccount()
+   {
+      login();
       String fname, lname,email,phone;
       do
       {
@@ -105,18 +114,20 @@ public class StudentClient
       student.setLastName(lname); 
       student.setEmail(email); 
       student.setPhoneNumber(phone); 
-      student.setUserName(userName);
-      student.setPassword(password);
       
       //calls the remote method on the server to actually create the account
       if(server.createAccount(student)) 
       {
          System.out.println("Account Created Successfully!!!");
+         string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                                + " Account created for user: " + student.getUserName() + " on server: "
+                                + student.getInstitution();
+         logFile(student.getUserName(),logInfo);
          return true;
       }
       else 
       {
-         /*get an error message from the server*/
+         //TODO get an error message from the server
          return false;
       }
    }
@@ -156,36 +167,98 @@ public class StudentClient
             {
                case 1:
                  // TODO if available, add book one to student
+                 if(bookList[0] >0) 
+                 {
+                      server.reserveBook(student.getUserName(),student.getPassword(),bookList[0].getName(),booList[0].getAuthor());
+                      string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                                + " Book: " + bookList[0].getName() + " reservered by user: " + student.getUserName() + " on server: "
+                                + student.getInstitution();
+                      logFile(student.getUserName(),logInfo);
+                 }
+                 else System.out.println("No copies of this book are available at the moment!!");
                   valid = true;
                   break;
                   
                case 2:
                   // TODO if available, add book two to student
+                  if(bookList[1] >0) 
+                  {
+                      server.reserveBook(student.getUserName(),student.getPassword(),bookList[1].getName(),booList[1].getAuthor());
+                      string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                                + " Book: " + bookList[1].getName() + " reservered by user: " + student.getUserName() + " on server: "
+                                + student.getInstitution();
+                      logFile(student.getUserName(),logInfo);
+                  }
+                 else System.out.println("No copies of this book are available at the moment!!");
                   valid = true;
                   break;
                   
                case 3:
                   // TODO if available, add book three to student
+                  if(bookList[2] >0) 
+                  {
+                      server.reserveBook(student.getUserName(),student.getPassword(),bookList[2].getName(),booList[2].getAuthor());
+                      string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                                + " Book: " + bookList[2].getName() + " reservered by user: " + student.getUserName() + " on server: "
+                                + student.getInstitution();
+                      logFile(student.getUserName(),logInfo);
+                  }
+                 else System.out.println("No copies of this book are available at the moment!!");
                   valid = true;
                   break;
                   
                case 4:
                   // TODO if available, add book four to student
+                  if(bookList[3] >0) 
+	          {
+	              server.reserveBook(student.getUserName(),student.getPassword(),bookList[3].getName(),booList[3].getAuthor());
+	              string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                                + " Book: " + bookList[3].getName() + " reservered by user: " + student.getUserName() + " on server: "
+                                + student.getInstitution();
+                      logFile(student.getUserName(),logInfo);
+	          }
+                 else System.out.println("No copies of this book are available at the moment!!");
                   valid = true;
                   break;
                   
                case 5:
                   // TODO if available, add book five to student
+                  if(bookList[4] >0) 
+                  {
+                  	server.reserveBook(student.getUserName(),student.getPassword(),bookList[4].getName(),booList[4].getAuthor());
+                  	string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                                + " Book: " + bookList[4].getName() + " reservered by user: " + student.getUserName() + " on server: "
+                                + student.getInstitution();
+                      logFile(student.getUserName(),logInfo);
+                  }
+                 else System.out.println("No copies of this book are available at the moment!!");
                   valid = true;
                   break;
                   
                case 6:
                   // TODO if available, add book six to student
+                  if(bookList[5] >0) 
+                  {
+                  	server.reserveBook(student.getUserName(),student.getPassword(),bookList[5].getName(),booList[5].getAuthor());
+                  	string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                                + " Book: " + bookList[5].getName() + " reservered by user: " + student.getUserName() + " on server: "
+                                + student.getInstitution();
+                      logFile(student.getUserName(),logInfo);
+                  }
+                 else System.out.println("No copies of this book are available at the moment!!");
                   valid = true;
                   break;
                   
                case 7:
                   // TODO if available, add book seven to student
+                  if(bookList[6] >0) server.reserveBook(student.getUserName(),student.getPassword(),bookList[6].getName(),booList[6].getAuthor());
+                  {
+                  	string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                                + " Book: " + bookList[6].getName() + " reservered by user: " + student.getUserName() + " on server: "
+                                + student.getInstitution();
+                       logFile(student.getUserName(),logInfo);
+                  }
+                 else System.out.println("No copies of this book are available at the moment!!");
                   valid = true;
                   break;
                   
@@ -248,13 +321,13 @@ public class StudentClient
          }
       }
        
-      if(aStudent.login())
-      {
+      
          System.out.println();
          System.out.println("Choose an option:");
          System.out.println();
          System.out.println("1- Reserve a Book.");
-         System.out.println("2- Logout(Exit)");
+         System.out.println("2- Create an Account");
+          System.out.println("3- Exit");
          
          valid = false;
          
@@ -266,28 +339,34 @@ public class StudentClient
                switch(choice)
                {
                   case 1:
+                     aStudent.login();
                      aStudent.reserveBook();
                      valid = true;
                      break;
-                  
+                     
                   case 2:
+                     aStudent.login();
+                     aStudent.createAccount();
+                     valid = true;
+                     break;
+                  
+                  case 3:
                      System.out.println("Thank you for visiting the online Library!!");
                      System.out.println("See you soon!!");
                      System.in.close();
-				         System.exit(0);
+	             System.exit(0);
                      valid = true;
                      break;
             
                   default:
-                     System.out.println("please choose options 1 or 2 only!!");
+                     System.out.println("please choose options 1, 2 or 3 only!!");
                      valid = false;
-            }
+                }
          }
          catch(Exception e)
          {
             System.out.println("Invalid input!!! Please enter an integer");
          }
-      }
       }
       
    }
