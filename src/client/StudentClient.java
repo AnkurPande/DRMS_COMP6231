@@ -9,7 +9,7 @@ import java.rmi.Naming;
 import java.rmi.RMISecurityManager;
 import Models.*;
 
-public class StudentClient 
+public class StudentClient extends Thread
 {
    private Scanner scan;
    private Student student;
@@ -27,8 +27,14 @@ public class StudentClient
       if(!folder.exist()) clientLogFolder.mkdir();
    }
    
+   @overide
+   public void run()
+   {
+   	
+   }
    
-   public bool login()
+   
+   public bool validateCredentials()
    {
       String userName;
       String password;
@@ -343,7 +349,7 @@ public class StudentClient
          }
       }
        
-     if(aStudent.login())
+     if(aStudent.validateCredentilas())
      {
          System.out.println();
          System.out.println("Choose an option:");
