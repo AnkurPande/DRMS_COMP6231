@@ -12,7 +12,6 @@ import java.util.Map;
 public class Student {
 
 	// Student Structure
-	private String studentID = null;	
 	private String firstName = null;
 	private String lastName = null;
 	private String emailAddress = null;
@@ -42,10 +41,9 @@ public class Student {
 	/*
 	 * Student constructor overloading
 	 */
-	public Student(String studentID, String firstName, String lastName, String emailAddress, String phoneNumber, 
-			String eduInstitute, String userName, String password) throws Exception
+	public Student(String firstName, String lastName, String emailAddress, String phoneNumber, 
+			 String userName, String password, String eduInstitute)
 	{
-		this.studentID = studentID;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.emailAddress = emailAddress;
@@ -60,13 +58,7 @@ public class Student {
 	
 	
 	// ------------------------ GETTERS Functions START --------------------------------------
-	/**
-	 * This function will return student's ID
-	 */
-	public String getStudentID() 
-	{
-		return this.studentID;
-	}
+	
 	
 	/**
 	 * This funciton will return student's first name
@@ -156,10 +148,6 @@ public class Student {
 	
 	// ------------------------ SETTERS Functions Start --------------------------------------
 	
-	public void setStudent_id(String studentID) 
-	{
-		this.studentID = studentID;
-	}
 	
 	
 	public void setFirstName(String firstName) 

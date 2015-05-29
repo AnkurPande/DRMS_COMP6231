@@ -1,8 +1,5 @@
 package client;
 
-import org.omg.CORBA.ORB;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.File;
 import java.io.IOException;
@@ -10,10 +7,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 import java.rmi.*;
-import java.rmi.server.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import server.LibraryServerInterface;
 
 /**
@@ -28,10 +21,8 @@ import server.LibraryServerInterface;
  */
 public class AdminClient {
 	
-	private String AdminClientName;
-	private String AdminPasword;
+	
 	private String EDU_Institution;
-	private int NumberofDay;
 	
 	
 	/**
@@ -41,6 +32,8 @@ public class AdminClient {
 	public String getEducationalInstitution()
 	{
 		return EDU_Institution;
+		
+		
 	}
 	
 	/**
@@ -82,11 +75,11 @@ public class AdminClient {
 		String s = EDU;
 		String server;
 		if(s.equals("Concordia"))
-			server = "2020/Concordia-server";
-		else if(s.equals("Vanier"))
-			server = "2021/Vanier-server";
+			server = "4444/Concordia";
 		else if(s.equals("McGill"))
-			server = "2022/McGill-server";
+			server = "4446/McGill";
+		else if(s.equals("UdeM"))
+			server = "4448/UdeM";
 		else
 		{
 			server = "server is not found";
@@ -107,7 +100,7 @@ public class AdminClient {
 		{
 			String server = FindServer(this.getEducationalInstitution());
 			LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://localhost:"+server);
-			result = libraryserver.getNonRetuners("admin","admin");
+			result = libraryserver.getNonRetuners("admin","admin","Concordia","5");
 			
 			/*For Display the result*/
 			if(result!=null)
@@ -128,7 +121,7 @@ public class AdminClient {
 	
 	/**
 	 * <p>
-	 * 		This function lists all the students’ First Name, Last Name and Phone Number who have not returned
+	 * 		This function lists all the studentsï¿½ First Name, Last Name and Phone Number who have not returned
 			the books with NumDays past their loan date in all the three educational institutions. The
 			admin File is updated with this information. The admin can then pass that information
 			to student to remind them about the book loan.
@@ -141,7 +134,7 @@ public class AdminClient {
 		String[] s=null;
 		String result= null;
 		boolean valid= false;
-		System.out.println("Please Enter Admin Username And valid Password and Educational Institution ");
+		System.out.println("Please Enter Admin Username And valid Password and Educational Institution and Number of days");
 		
 		while(!valid)
 		{
@@ -149,19 +142,18 @@ public class AdminClient {
 				input = scan.nextLine();
 			    s = input.split("\\s");
 			    String server = FindServer(s[2]);
-			    		if(server.equals("server is not found"))
-			    			{
-			    				System.out.println("server do not exsit!");
-			    				continue;
-			    			}
-			    		else{
-			    				LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://localhost:"+server);
-			    				result = libraryserver.getNonRetuners(s[0], s[1]);
-			    				log("Admin_"+server.substring(5)+".log",result+"\r\n" +new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
-			    				System.out.println(result); 
-			    				valid = true;
-			    				break;
-			    			}
+			    	if(server.equals("server is not found")) {
+			    		System.out.println("server do not exsit!");
+			    		continue;
+			    	}else {
+		    			System.out.println("working");
+			    		LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://localhost:"+server);		
+			    		result = libraryserver.getNonRetuners(s[0], s[1], s[2], s[3]);
+			    		
+			    		log("Admin_"+server.substring(5)+".log",result+"\r\n" +new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
+			    		System.out.println(result); 
+			    		valid = true;			
+			    	}
 			}catch(Exception e)
 			{
 					
@@ -246,10 +238,9 @@ public class AdminClient {
 		System.out.println("=============================");
 		System.out.println("Please select an Option......");
 		System.out.println("1. Get Non Retuners ");
-		//System.out.println("2. Debug tools Set Duration");
+		System.out.println("2. Debug tools Set Duration");
 		System.out.println("3. Test multiple thread get Non Retuners");
 		System.out.println("4. Exit");
-		System.out.println("==============================");
 	}
 	
 	

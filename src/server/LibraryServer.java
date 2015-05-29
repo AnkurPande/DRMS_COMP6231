@@ -24,15 +24,16 @@ import models.Student;
 
 public class LibraryServer implements LibraryServerInterface, Runnable {
 	
+	
 	private String nameOfServer;
 	private int portOfRMI;
 	private int portOfUDP;
 	
 	private UDPSocket1 socket;
 	
-	private static List<Book> bookshelf;
-	private static Map<String, Map<String, Student>> studentData;
-	private static List<Integer> listOfUDPPorts = new ArrayList<Integer>();
+	private  List<Book> bookshelf = new ArrayList<Book>();
+	private  Map<String, Map<String, Student>> studentData = new HashMap<String, Map<String, Student>>();
+	private  List<Integer> listOfUDPPorts = new ArrayList<Integer>();
 	public static final int DEFAULT_DURATION = 14;
 	
 	
@@ -44,9 +45,11 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		this.portOfRMI = portOfRMI;
 		this.portOfUDP = portOfUDP;
 		
-		LibraryServer.listOfUDPPorts.add(4445);
-		LibraryServer.listOfUDPPorts.add(4447);
-		LibraryServer.listOfUDPPorts.add(4449);
+		this.listOfUDPPorts.add(4445);
+		this.listOfUDPPorts.add(4447);
+		this.listOfUDPPorts.add(4449);
+		
+		initializeTestingData();
 		
 		System.out.println(this.nameOfServer + " server is up!");
 		try{
@@ -114,7 +117,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			book.setNumberCopies(book.getNumberCopies() -1);
 			
 			log(username, "Reserve a book. " + "Book name: "+ bookName + " Book author: " + authorName);
-			
+		
 			message = "Reserve success.";
 			System.out.println(message);
 			return message;
@@ -122,9 +125,12 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	}
 
 	@Override
-	public String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays)
+	public  String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays)
 			throws RemoteException {
-		// check admin password
+		
+		if(!adminUsername.equalsIgnoreCase("admin") || !adminPassword.equalsIgnoreCase("admin")) {
+			return "Wrong Username or Password!";
+		}
 		
 		
 		StringBuilder finalResult = new StringBuilder();
@@ -140,7 +146,6 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 					socket = new DatagramSocket();
 					InetAddress host = InetAddress.getByName("localhost");
 					
-
 					byte[] message = numDays.getBytes();
 					DatagramPacket sendPacket = new DatagramPacket(message, message.length, host, port);
 					socket.send(sendPacket);
@@ -150,6 +155,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 					socket.receive(receivedPacket);
 					
 					resultFromOther = new String(receivedPacket.getData());
+					
 					finalResult.append(resultFromOther);
 				
 				} catch (SocketException e) {
@@ -171,12 +177,17 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			throws RemoteException {
 		
 		Student student = this.getStudent(username);
-		if (student != null) {
-			if(student.getBooks().containsKey(bookName)){
-				student.getBooks().put(bookName, numOfDays);
-				return true;
+		synchronized(student) {
+			if (student != null) {
+				if(student.getBooks().containsKey(bookName)){
+					student.getBooks().put(bookName, numOfDays);
+					
+					System.out.println(bookName + " " + student.getBooks().get(bookName));
+					return true;
+				}
 			}
 		}
+		
 		return false;
 	}
 	
@@ -243,6 +254,8 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			Remote obj = UnicastRemoteObject.exportObject(this, this.portOfRMI);
 			Registry registry = LocateRegistry.createRegistry(this.portOfRMI);
 			registry.bind(this.nameOfServer, obj);
+			
+			System.out.println("Server is running" + nameOfServer);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} 
@@ -314,21 +327,49 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		this.socket = socket;
 	}
 
-	public static List<Book> getBookshelf() {
-		return bookshelf;
-	}
 
-	public static void setBookshelf(List<Book> bookshelf) {
-		LibraryServer.bookshelf = bookshelf;
+	//-------------Initialize Testing Data-------------------
+	public void initializeTestingData() {
+		if(this.nameOfServer.equalsIgnoreCase("Concordia")) {
+			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "xxxxxx", "Concordia");
+			this.addStudent(student);
+			student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "Concordia");
+			this.addStudent(student);
+			student = new Student("Ccc","Ddd", "dd@dddd.dd","5141111111", "cccddd", "xxxxx", "Concordia");
+			this.addStudent(student);
+		}else if (this.nameOfServer.equalsIgnoreCase("McGill")) { 
+			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "xxxxxx", "McGill");
+			this.addStudent(student);
+			student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "McGill");
+			this.addStudent(student);
+			student = new Student("Ccc","Ddd", "dd@dddd.dd","5141111111", "cccddd", "xxxxx", "McGill");
+			this.addStudent(student);
+		}else if (this.nameOfServer.equalsIgnoreCase("UdeM")) {
+			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "xxxxxx", "UdeM");
+			this.addStudent(student);
+			student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "UdeM");
+			this.addStudent(student);
+			student = new Student("Ccc","Ddd", "dd@dddd.dd","5141111111", "cccddd", "xxxxx", "UdeM");
+			this.addStudent(student);
+		}
+		
+		Book book = new Book("AAA","BBB",1);
+		bookshelf.add(book);
+		book = new Book("CCC","DDD",3);
+		bookshelf.add(book);
+		book = new Book("EEE","FFF",3);
+		bookshelf.add(book);
+		book = new Book("GGG","HHH",3);
+		bookshelf.add(book);
+		book = new Book("III","JJJ",3);
+		bookshelf.add(book);
+		
+		try {
+			this.reserveBook("aaabbb", "xxxxxx", "AAA", "BBB");
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
-
-	public static Map<String, Map<String, Student>> getStudentData() {
-		return studentData;
-	}
-
-	public static void setStudentData(Map<String, Map<String, Student>> studentData) {
-		LibraryServer.studentData = studentData;
-	}
-
-	
 }
