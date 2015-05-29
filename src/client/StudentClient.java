@@ -103,7 +103,6 @@ public class StudentClient
    
    private boolean createAccount() throws RemoteException, IOException
    {
-      validateCredentials();
       String fname, lname,email,phone;
       do
       {
