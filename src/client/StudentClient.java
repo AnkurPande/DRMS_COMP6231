@@ -25,6 +25,8 @@ public class StudentClient
    private FileWriter myWriter;
    private File clientLogFolder;
    
+   private static StudentClient aStudent = null;
+
    StudentClient(String institution) throws MalformedURLException, RemoteException, NotBoundException
    {
       scan = new Scanner(System.in);
@@ -101,6 +103,58 @@ public class StudentClient
    	myWriter.close();
    }
    
+   public void showMenu()
+   {
+	   
+	   System.out.println();
+       System.out.println("Choose an option:");
+       System.out.println();
+       System.out.println("1- Create account.");
+       System.out.println("2- Reserve a Book.");
+       System.out.println("3- Exit");
+       
+      boolean valid = false;
+      int choice = 0;
+       
+       while(!valid)
+       {
+          try
+          {
+             choice = scan.nextInt();
+             switch(choice)
+             {
+                case 1:
+              	 aStudent.validateCredentials();
+                   aStudent.createAccount();
+                   valid = true;
+                   break;
+                   
+                case 2:
+               	 aStudent.validateCredentials();
+                    aStudent.reserveBook();
+                    valid = true;
+                    break;
+                
+                case 3:
+                   System.out.println("Thank you for visiting the online Library!!");
+                   System.out.println("See you soon!!");
+                   System.in.close();
+	             System.exit(0);
+                   valid = true;
+                   break;
+          
+                default:
+                   System.out.println("please choose options 1, 2 or 3 only!!");
+                   valid = false;
+              }
+       }
+       catch(Exception e)
+       {
+          System.out.println("Invalid input!!! Please enter an integer");
+       }
+    }
+   }
+   
    private boolean createAccount() throws RemoteException, IOException
    {
       String fname, lname,email,phone;
@@ -148,6 +202,7 @@ public class StudentClient
                                 + " Account created for user: " + student.getUserName() + " on server: "
                                 + student.getEducationalIns();
          logFile(student.getUserName(),logInfo);
+         aStudent.showMenu();
          return true;
       }
       else 
@@ -183,6 +238,7 @@ public class StudentClient
 	  
      
       System.out.println(server.reserveBook(student.getUserName(),student.getPassword(),bookName,authorName));
+      showMenu();
                      
    }
    
@@ -199,7 +255,6 @@ public class StudentClient
       
       int choice = 0;
       boolean valid = false;
-      StudentClient aStudent = null;
       Scanner scan = new Scanner(System.in);
       
       while(!valid)
@@ -239,56 +294,9 @@ public class StudentClient
             valid = false;
          }
       }
-       
-     
-         System.out.println();
-         System.out.println("Choose an option:");
-         System.out.println();
-         System.out.println("1- Create account.");
-         System.out.println("2- Reserve a Book.");
-         System.out.println("3- Exit");
-         
-         valid = false;
-         
-         while(!valid)
-         {
-            try
-            {
-               choice = scan.nextInt();
-               switch(choice)
-               {
-                  case 1:
-                	 aStudent.validateCredentials();
-                     aStudent.createAccount();
-                     valid = true;
-                     break;
-                     
-                  case 2:
-                 	 aStudent.validateCredentials();
-                      aStudent.reserveBook();
-                      valid = true;
-                      break;
-                  
-                  case 3:
-                     System.out.println("Thank you for visiting the online Library!!");
-                     System.out.println("See you soon!!");
-                     System.in.close();
-	             System.exit(0);
-                     valid = true;
-                     break;
-            
-                  default:
-                     System.out.println("please choose options 1, 2 or 3 only!!");
-                     valid = false;
-                }
-         }
-         catch(Exception e)
-         {
-            System.out.println("Invalid input!!! Please enter an integer");
-         }
-      }
-   
       
+      aStudent.showMenu();
+       
    }
    
 }
