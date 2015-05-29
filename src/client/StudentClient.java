@@ -1,15 +1,23 @@
 package client;
 
+import models.*;
+import server.*;
+
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
+import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
-import Models.*;
+import java.rmi.RemoteException;
 
-public class StudentClient extends Thread
+@SuppressWarnings("deprecation")
+public class StudentClient 
 {
    private Scanner scan;
    private Student student;
@@ -17,24 +25,37 @@ public class StudentClient extends Thread
    private FileWriter myWriter;
    private File clientLogFolder;
    
-   StudentClient(String institution)
+   StudentClient(String institution) throws MalformedURLException, RemoteException, NotBoundException
    {
       scan = new Scanner(System.in);
       student = new Student();
-      server = (LibraryServerInterface) Naming.lookup("Registry path here with name of the institution");
-      student.setInstitution(institution);
+      
+      server = (LibraryServerInterface) Naming.lookup("rmi://132.205.93.19:"+ findServer(institution));
+      student.setEducationalIns(institution);
       clientLogFolder = new File("clientLog");
-      if(!folder.exist()) clientLogFolder.mkdir();
+      if(!clientLogFolder.exists()) clientLogFolder.mkdir();  
    }
    
-   @overide
-   public void run()
+   public static String findServer(String edu)
    {
-   	
-   }
+		String s = edu;
+		String server;
+		if(s.equals("Concordia"))
+			server = "4444/Concordia";
+		else if(s.equals("McGill"))
+			server = "4446/McGill";
+		else if(s.equals("UdeM"))
+			server = "4448/UdeM";
+		else
+		{
+			server = "server is not found";
+		}
+		return server;
+	}
+  
    
    
-   public bool validateCredentials()
+   public boolean validateCredentials()
    {
       String userName;
       String password;
@@ -46,8 +67,7 @@ public class StudentClient extends Thread
          //gets username from the consol
          System.out.print("UserName: ");
          userName = scan.next();
-         System.out.println();
-         
+         System.out.println();         
          //gets password from the consol
          System.out.print("Password: ");
          password = scan.next();
@@ -61,39 +81,19 @@ public class StudentClient extends Thread
          if(userName.length() == 0) System.out.println("The user name field is empty!!!");
          if(password.length() == 0) System.out.println("The password field is empty!!!");
         
-      }
-      
-      
-      if(server.getStudent(userName) != null)
-      {
-      	  if(server.getStudent(userName).getPassword().equals(password))
-      	  {
-      	  	return true;
-      	  }
-      	  else
-      	  {
-      	  	System.out.println("Wrong password");
-      	  	return false;
-      	  }
-      }
-      else
-      {
-      	  System.out.println("You are not registered as a user!! Please create your account now");
-      	  System.out.println();
+      }while(userName.length() < 6 || userName.length() > 15 || password.length() < 8);
+     
       	  student.setUserName(userName);
       	  student.setPassword(password);
-      	  if(createAccount()) return true;
-      	  
-      }
       
-      return false;
+      	  return true;
       
    }
    
-   public void logFile(String fileName, String logInfo)
+   public void logFile(String fileName, String logInfo) throws IOException
    {
    	File clientFile = new File("clientLog",fileName); 
-   	if(!clientFile.exists()) client.createNewFile();
+   	if(!clientFile.exists()) clientFile.createNewFile();
    	
    	myWriter = new FileWriter(clientFile,true);
    	myWriter.write(logInfo+"\n");
@@ -101,9 +101,9 @@ public class StudentClient extends Thread
    	myWriter.close();
    }
    
-   private bool createAccount()
+   private boolean createAccount() throws RemoteException, IOException
    {
-      login();
+      validateCredentials();
       String fname, lname,email,phone;
       do
       {
@@ -114,7 +114,7 @@ public class StudentClient extends Thread
         
         //gets last name from the consol 
         System.out.print("Last Name: ");
-        studen = scan.next();
+        lname = scan.next();
         System.out.println();
         
         //gets email from the consol
@@ -132,22 +132,22 @@ public class StudentClient extends Thread
         if(lname.isEmpty()) System.out.println("The last name field is empty!!!");
         if(email.isEmpty()) System.out.println("The email fields is empty!!!");
         if(phone.isEmpty()) System.out.println("The phone number field is empty!!!");
-        System.out.println("Try again!!!");
+        if((fname.isEmpty() || lname.isEmpty() || email.isEmpty() || phone.isEmpty())) System.out.println("Try again!!!");
       }
-      while(fname.isEmpty() || lname.isEmpty() || email.isEmpty() || phone.isEmpty())
+      while(fname.isEmpty() || lname.isEmpty() || email.isEmpty() || phone.isEmpty());
       
-      student.setFisrtName(fname); 
+      student.setFirstName(fname); 
       student.setLastName(lname); 
-      student.setEmail(email); 
+      student.setEmailAddress(email); 
       student.setPhoneNumber(phone); 
       
       //calls the remote method on the server to actually create the account
-      if(server.createAccount(student)) 
+      if(server.createAccount(student.getFirstName(), student.getLastName(), student.getEmailAddress(), student.getPhoneNumber(), student.getUserName(), student.getPassword(), student.getEducationalIns())) 
       {
          System.out.println("Account Created Successfully!!!");
-         string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+         String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
                                 + " Account created for user: " + student.getUserName() + " on server: "
-                                + student.getInstitution();
+                                + student.getEducationalIns();
          logFile(student.getUserName(),logInfo);
          return true;
       }
@@ -158,171 +158,60 @@ public class StudentClient extends Thread
       }
    }
    
-   public void reserveBook()
+   public void reserveBook() throws RemoteException
    {
-      bool valid = false;
-      int choice = 0;
-      
-      System.out.println("List of Books in The Library:");
-      System.out.println();
-      
-      List<Book> list = server.getBookShelf();
-      
-      Book[] bookList = list.toArray(list.size()); 
-      
-      //Prints all the books of the Library
-      for(int i = 0; i<bookList.length(); i++)
-      {
-         int num = i+1;
-         System.out.print(""+num+ "- " + bookList[i].getName());
-         
-         //checks if there is available copies of the book
-         if(bookList[i].Qty == 0)
-         {
-            System.out.println(" (unavailable)");
-         }
-         else System.out.println();   
-      }
-      
-      System.out.println("Which book would you like to reserve?");
-      
-       while(!valid)
-      {
-         try
-         {
-            choice = scan.nextInt();
-            switch(choice)
-            {
-               case 1:
-                 // TODO check the response of the server before writing to the log
-                 if(bookList[0] >0) 
-                 {
-                      server.reserveBook(student.getUserName(),student.getPassword(),bookList[0].getName(),booList[0].getAuthor());
-                      string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                                + " Book: " + bookList[0].getName() + " reservered by user: " + student.getUserName() + " on server: "
-                                + student.getInstitution();
-                      logFile(student.getUserName(),logInfo);
-                 }
-                 else System.out.println("No copies of this book are available at the moment!!");
-                  valid = true;
-                  break;
-                  
-               case 2:
-                  // TODO check the response of the server before writing to the log
-                  if(bookList[1] >0) 
-                  {
-                      server.reserveBook(student.getUserName(),student.getPassword(),bookList[1].getName(),booList[1].getAuthor());
-                      string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                                + " Book: " + bookList[1].getName() + " reservered by user: " + student.getUserName() + " on server: "
-                                + student.getInstitution();
-                      logFile(student.getUserName(),logInfo);
-                  }
-                 else System.out.println("No copies of this book are available at the moment!!");
-                  valid = true;
-                  break;
-                  
-               case 3:
-                  // TODO check the response of the server before writing to the log
-                  if(bookList[2] >0) 
-                  {
-                      server.reserveBook(student.getUserName(),student.getPassword(),bookList[2].getName(),booList[2].getAuthor());
-                      string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                                + " Book: " + bookList[2].getName() + " reservered by user: " + student.getUserName() + " on server: "
-                                + student.getInstitution();
-                      logFile(student.getUserName(),logInfo);
-                  }
-                 else System.out.println("No copies of this book are available at the moment!!");
-                  valid = true;
-                  break;
-                  
-               case 4:
-                  // TODO check the response of the server before writing to the log
-                  if(bookList[3] >0) 
-	          {
-	              server.reserveBook(student.getUserName(),student.getPassword(),bookList[3].getName(),booList[3].getAuthor());
-	              string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                                + " Book: " + bookList[3].getName() + " reservered by user: " + student.getUserName() + " on server: "
-                                + student.getInstitution();
-                      logFile(student.getUserName(),logInfo);
-	          }
-                 else System.out.println("No copies of this book are available at the moment!!");
-                  valid = true;
-                  break;
-                  
-               case 5:
-                  // TODO check the response of the server before writing to the log
-                  if(bookList[4] >0) 
-                  {
-                  	server.reserveBook(student.getUserName(),student.getPassword(),bookList[4].getName(),booList[4].getAuthor());
-                  	string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                                + " Book: " + bookList[4].getName() + " reservered by user: " + student.getUserName() + " on server: "
-                                + student.getInstitution();
-                      logFile(student.getUserName(),logInfo);
-                  }
-                 else System.out.println("No copies of this book are available at the moment!!");
-                  valid = true;
-                  break;
-                  
-               case 6:
-                  // TODO check the response of the server before writing to the log
-                  if(bookList[5] >0) 
-                  {
-                  	server.reserveBook(student.getUserName(),student.getPassword(),bookList[5].getName(),booList[5].getAuthor());
-                  	string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                                + " Book: " + bookList[5].getName() + " reservered by user: " + student.getUserName() + " on server: "
-                                + student.getInstitution();
-                      logFile(student.getUserName(),logInfo);
-                  }
-                 else System.out.println("No copies of this book are available at the moment!!");
-                  valid = true;
-                  break;
-                  
-               case 7:
-                  // TODO check the response of the server before writing to the log
-                  if(bookList[6] >0) server.reserveBook(student.getUserName(),student.getPassword(),bookList[6].getName(),booList[6].getAuthor());
-                  {
-                  	string logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                                + " Book: " + bookList[6].getName() + " reservered by user: " + student.getUserName() + " on server: "
-                                + student.getInstitution();
-                       logFile(student.getUserName(),logInfo);
-                  }
-                 else System.out.println("No copies of this book are available at the moment!!");
-                  valid = true;
-                  break;
-                  
-               default:
-                  System.out.println("please choose options 1 to 7 only!!");
-                  valid = false;
-            }
-         }
-         catch(Exception e)
-         {
-            System.out.println("Invalid input!!! Please enter an integer");
-         }
-      }
+	   String bookName, authorName;
+	      do
+	      {
+	        //gets first name from the consol
+	        System.out.print("Book Name: ");
+	        bookName = scan.next();
+	        System.out.println();
+	        
+	        //gets last name from the consol 
+	        System.out.print("Author Name: ");
+	        authorName = scan.next();
+	        System.out.println();
+	        
+	 
+	        
+	        //inputs validation error mesages
+	        if(bookName.isEmpty()) System.out.println("The Book name field is empty!!!");
+	        if(authorName.isEmpty()) System.out.println("The Author name field is empty!!!");
+	        if((bookName.isEmpty() || authorName.isEmpty())) System.out.println("Try again!!!");
+	      }
+	      while(bookName.isEmpty() || authorName.isEmpty());
+	  
+     
+      System.out.println(server.reserveBook(student.getUserName(),student.getPassword(),bookName,authorName));
+                     
    }
    
    public static void main(String args[])
    {
-      println("WELCOME TO ONLINE LIBRARY SYSTEM");
-      println();
-      println("Select your instution:");
-      println();
-      println("1- Concordia");
-      println("2- McGill");
-      println("3- UdeM");
+	  System.setSecurityManager(new RMISecurityManager());
+      System.out.println("WELCOME TO ONLINE LIBRARY SYSTEM");
+      System.out.println();
+      System.out.println("Select your instution:");
+      System.out.println();
+      System.out.println("1- Concordia");
+      System.out.println("2- McGill");
+      System.out.println("3- UdeM");
       
       int choice = 0;
-      bool valid = false;
-      StudentClient aStudent;
+      boolean valid = false;
+      StudentClient aStudent = null;
+      Scanner scan = new Scanner(System.in);
       
       while(!valid)
       {
          try
          {
+
             choice = scan.nextInt();
             switch(choice)
             {
+             
                case 1:
                   aStudent = new StudentClient("Concordia");
                   valid = true;
@@ -346,16 +235,19 @@ public class StudentClient extends Thread
          catch(Exception e)
          {
             System.out.println("Invalid input!!! Please enter an integer");
+            
+            //scan.close();
+            valid = false;
          }
       }
        
-     if(aStudent.validateCredentilas())
-     {
+     
          System.out.println();
          System.out.println("Choose an option:");
          System.out.println();
-         System.out.println("1- Reserve a Book.");
-          System.out.println("2- Exit");
+         System.out.println("1- Create account.");
+         System.out.println("2- Reserve a Book.");
+         System.out.println("3- Exit");
          
          valid = false;
          
@@ -367,11 +259,18 @@ public class StudentClient extends Thread
                switch(choice)
                {
                   case 1:
-                     aStudent.reserveBook();
+                	 aStudent.validateCredentials();
+                     aStudent.createAccount();
                      valid = true;
                      break;
-                  
+                     
                   case 2:
+                 	 aStudent.validateCredentials();
+                      aStudent.reserveBook();
+                      valid = true;
+                      break;
+                  
+                  case 3:
                      System.out.println("Thank you for visiting the online Library!!");
                      System.out.println("See you soon!!");
                      System.in.close();
@@ -380,7 +279,7 @@ public class StudentClient extends Thread
                      break;
             
                   default:
-                     System.out.println("please choose options 1 or 2 only!!");
+                     System.out.println("please choose options 1, 2 or 3 only!!");
                      valid = false;
                 }
          }
@@ -389,7 +288,7 @@ public class StudentClient extends Thread
             System.out.println("Invalid input!!! Please enter an integer");
          }
       }
-    }
+   
       
    }
    
