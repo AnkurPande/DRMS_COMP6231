@@ -146,7 +146,7 @@ public class AdminClient {
 			    		System.out.println("server do not exsit!");
 			    		continue;
 			    	}else {
-			    		LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://localhost:"+server);		
+			    		LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://132.205.45.212:"+server);		
 			    		result = libraryserver.getNonRetuners(s[0], s[1], s[2], s[3]);
 			    		
 			    		log("Admin_"+server.substring(5)+".log",new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "Get Nonreturners: " + result+"\r\n");
@@ -210,7 +210,7 @@ public class AdminClient {
 					continue;
 				}
 		    else{
-					LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://localhost:"+server);
+					LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://132.205.45.212:"+server);
 					result = libraryserver.setDuration(s[0], s[1], Integer.parseInt(s[3]));
 					if(result==true)
 						System.out.println("Set Duration succesfiul");
