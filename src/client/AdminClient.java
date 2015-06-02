@@ -146,7 +146,6 @@ public class AdminClient {
 			    		System.out.println("server do not exsit!");
 			    		continue;
 			    	}else {
-		    			System.out.println("working");
 			    		LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://localhost:"+server);		
 			    		result = libraryserver.getNonRetuners(s[0], s[1], s[2], s[3]);
 			    		
@@ -239,7 +238,6 @@ public class AdminClient {
 		System.out.println("Please select an Option......");
 		System.out.println("1. Get Non Retuners ");
 		System.out.println("2. Debug tools Set Duration");
-		System.out.println("3. Test multiple thread get Non Retuners");
 		System.out.println("4. Exit");
 	}
 	
