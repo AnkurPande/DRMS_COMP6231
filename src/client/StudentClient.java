@@ -16,6 +16,16 @@ import java.rmi.NotBoundException;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 
+/**
+ * <h1>Student Client</h1>
+ * <p>
+ * 		This class represents the student view of the library system.
+ * </p>
+ * 
+ * @version 1.0.0.0
+ * @author Eric Watat Lowe
+ */
+
 @SuppressWarnings("deprecation")
 public class StudentClient 
 {
@@ -26,7 +36,12 @@ public class StudentClient
    private File clientLogFolder;
    
    private static StudentClient aStudent = null;
-
+   
+   /**
+	 * <h1>Parameter Constructor</h1> 
+	 * @param institution
+	 * 		String Variable for Educational Institution
+	 */
    StudentClient(String institution) throws MalformedURLException, RemoteException, NotBoundException
    {
       scan = new Scanner(System.in);
@@ -38,6 +53,10 @@ public class StudentClient
       if(!clientLogFolder.exists()) clientLogFolder.mkdir();  
    }
    
+   /**
+	 * Finds the right server to connect to
+	 * @param edu
+	 */
    public static String findServer(String edu)
    {
 		String s = edu;
@@ -56,7 +75,11 @@ public class StudentClient
 	}
   
    
-   
+   /**
+	 * <h1></h1>
+	 * <p>This Function collects the username and password of theuser
+	 *     and checks if the meet the requirements</p>
+	 */
    public boolean validateCredentials()
    {
       String userName;
@@ -92,6 +115,10 @@ public class StudentClient
       
    }
    
+   /**
+	 * This function keeps a record of all the activities of a Student
+	 * @param fileName, logInfo
+	 */
    public void logFile(String fileName, String logInfo) throws IOException
    {
    	File clientFile = new File("clientLog",fileName); 
@@ -103,6 +130,10 @@ public class StudentClient
    	myWriter.close();
    }
    
+   /**
+	 * <h1></h1>
+	 * <p>This Function build the GUI of the user</p>
+	 */
    public void showMenu()
    {
 	   
@@ -155,6 +186,11 @@ public class StudentClient
     }
    }
    
+   /**
+	 * <h1></h1>
+	 * <p>This Function create an account for a student on the Library server
+	 *    of the institution where the student is registered</p>
+	 */
    private boolean createAccount() throws RemoteException, IOException
    {
       String fname, lname,email,phone;
@@ -212,6 +248,10 @@ public class StudentClient
       }
    }
    
+   /**
+	 * <h1></h1>
+	 * <p>This Function reserve a book for a registered student</p>
+	 */
    public void reserveBook() throws RemoteException
    {
 	   String bookName, authorName;
@@ -242,6 +282,10 @@ public class StudentClient
                      
    }
    
+   /**
+	 * <h1></h1>
+	 * <p>This is Where the execution of the program starts</p>
+	 */
    public static void main(String args[])
    {
 	  System.setSecurityManager(new RMISecurityManager());
