@@ -134,7 +134,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		
 		
 		StringBuilder finalResult = new StringBuilder();
-		finalResult.append(checkNonRetuners(numDays));
+		finalResult.append(checkNonRetuners(numDays) + "\n");
 		
 		for(int port: listOfUDPPorts) {
 			if(port != this.portOfUDP) {
@@ -156,7 +156,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 					
 					resultFromOther = new String(receivedPacket.getData());
 					
-					finalResult.append(resultFromOther);
+					finalResult.append(resultFromOther + "\n");
 				
 				} catch (SocketException e) {
 					System.out.println("Socket: " + e.getMessage());
@@ -205,7 +205,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 				}
 			}
 		}
-		sb.append( "..." + "\n");
+		sb.append( "..." );
 		return sb.toString();
 	}
 	

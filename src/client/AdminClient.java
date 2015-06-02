@@ -150,7 +150,7 @@ public class AdminClient {
 			    		LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://localhost:"+server);		
 			    		result = libraryserver.getNonRetuners(s[0], s[1], s[2], s[3]);
 			    		
-			    		log("Admin_"+server.substring(5)+".log",result+"\r\n" +new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
+			    		log("Admin_"+server.substring(5)+".log",new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "Get Nonreturners: " + result+"\r\n");
 			    		System.out.println(result); 
 			    		valid = true;			
 			    	}
