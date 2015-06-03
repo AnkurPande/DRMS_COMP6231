@@ -11,7 +11,7 @@
 Mitul Jetani
 Ankur Pande
 Haiyang Suen
-Eric Wata
+Eric Watat Lowe
 Sumair Zafar
 ```
 
