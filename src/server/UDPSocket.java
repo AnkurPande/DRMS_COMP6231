@@ -1,41 +1,44 @@
 package server;
-import java.net.*;
 
-public class UDPSocket {
-	DatagramSocket socket =null;
-	private int udpPort = 0;
-	String data;
-	public int getUdpPort() {
-		return udpPort;
-	}
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+
+public class UDPSocket extends Thread {
 	
-	public void sendResponse(byte[] buf, int length, InetAddress address, int port){
-		try {
-		socket = new DatagramSocket(port);
-		DatagramPacket reply = new DatagramPacket(buf,buf.length,address,port);
-		socket.send(reply);
-		} catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-		}
-		finally{
-			socket.close();
-		}
-	}
+	private LibraryServer server;
 	
-	public String recieveRequest(byte buf[],int Port){
+	public UDPSocket(LibraryServer server) {
+		this.server = server;
+		
+	}
+	@Override
+	public void run() {
+		DatagramSocket socket = null;
+		
 		try {
-			socket = new DatagramSocket(Port);
-			DatagramPacket recievedPacket = new DatagramPacket(buf,buf.length);
-			socket.receive(recievedPacket);
-			data = new String(recievedPacket.getData());
+			socket = new DatagramSocket(server.getPortOfUDP());
+			byte[] buffer = new byte[200];
+			
+			while(true){
+				DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
+				socket.receive(requestPacket);
+				
+				byte[] message = requestPacket.getData();
+				String receivedMessageString = new String(message);
+
+				String numDays = receivedMessageString.trim();
+				String responseMessageString = server.checkNonRetuners(numDays);
+				message = responseMessageString.getBytes();
+				
+				DatagramPacket responsePacket = new DatagramPacket(message, message.length, requestPacket.getAddress(), requestPacket.getPort());
+				socket.send(responsePacket);
+			}
+			
+			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
+		} finally {
+			if (socket != null) socket.close();
 		}
-		finally{
-			socket.close();
-		}
-		return data;
 	}
 }

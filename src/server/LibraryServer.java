@@ -29,20 +29,20 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	private int portOfRMI;
 	private int portOfUDP;
 	
-	private UDPSocket1 socket;
+	private UDPSocket socket;
 	
 	private  List<Book> bookshelf = new ArrayList<Book>();
 	private  Map<String, Map<String, Student>> studentData = new HashMap<String, Map<String, Student>>();
 	private  List<Integer> listOfUDPPorts = new ArrayList<Integer>();
 	public static final int DEFAULT_DURATION = 14;
+	public static final int PORT_OF_RMI = 4444;
 	
 	
 	
 	
-	public LibraryServer(String nameOfServer, int portOfRMI, int portOfUDP) {
+	public LibraryServer(String nameOfServer, int portOfUDP) {
 		
 		this.nameOfServer = nameOfServer;
-		this.portOfRMI = portOfRMI;
 		this.portOfUDP = portOfUDP;
 		
 		this.listOfUDPPorts.add(4445);
@@ -81,7 +81,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 
 	@Override
 	public String reserveBook(String username, String password,
-			String bookName, String authorName) throws RemoteException {
+			String bookName, String authorName)  {
 		
 		String message = null;
 		
@@ -125,8 +125,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	}
 
 	@Override
-	public  String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays)
-			throws RemoteException {
+	public  String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays) {
 		
 		if(!adminUsername.equalsIgnoreCase("admin") || !adminPassword.equalsIgnoreCase("admin")) {
 			return "Wrong Username or Password!";
@@ -238,7 +237,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	
 	public Book getBook(String bookName) {
 		
-		for(Book book: bookshelf) {
+		for(Book book: getBookshelf()) {
 			if(book.getBookName().equalsIgnoreCase(bookName)) {
 				return book;
 			}
@@ -250,17 +249,9 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	public void run() {
 		
 		
-		try{
-			Remote obj = UnicastRemoteObject.exportObject(this, this.portOfRMI);
-			Registry registry = LocateRegistry.createRegistry(this.portOfRMI);
-			registry.bind(this.nameOfServer, obj);
-			
-			System.out.println("Server is running" + nameOfServer);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} 
 		
-		this.socket = new UDPSocket1(this);
+		
+		this.socket = new UDPSocket(this);
 		socket.start();
 		
 		
@@ -269,12 +260,31 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	public static void main(String[] args) {
 		
 		
-		LibraryServer serverOfConcordia = new LibraryServer("Concordia", 4444, 4445);
+		LibraryServer serverOfConcordia = new LibraryServer("Concordia", 4445);
 		new Thread(serverOfConcordia).start();
-		LibraryServer serverOfMcGill = new LibraryServer("McGill", 4446, 4447);
+		LibraryServer serverOfMcGill = new LibraryServer("McGill", 4447);
 		new Thread(serverOfMcGill).start();
-		LibraryServer serverOfUdeM = new LibraryServer("UdeM", 4448, 4449);
+		LibraryServer serverOfUdeM = new LibraryServer("UdeM", 4449);
 		new Thread(serverOfUdeM).start();
+		
+		try{
+			Registry registry = LocateRegistry.createRegistry(PORT_OF_RMI);
+			
+			Remote obj = UnicastRemoteObject.exportObject(serverOfConcordia, PORT_OF_RMI);
+			registry.bind(serverOfConcordia.nameOfServer, obj);
+			System.out.println(serverOfConcordia.nameOfServer + " Server is running!");
+
+			obj = UnicastRemoteObject.exportObject(serverOfMcGill, PORT_OF_RMI);
+			registry.bind(serverOfMcGill.nameOfServer, obj);
+			System.out.println(serverOfMcGill.nameOfServer + " Server is running!");
+
+			obj = UnicastRemoteObject.exportObject(serverOfUdeM, PORT_OF_RMI);
+			registry.bind(serverOfUdeM.nameOfServer, obj);
+			System.out.println(serverOfUdeM.nameOfServer + " Server is running!");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
 	}
 	
 	//------------Log----------------
@@ -319,14 +329,21 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		this.portOfUDP = portOfUDP;
 	}
 
-	public UDPSocket1 getSocket() {
+	public UDPSocket getSocket() {
 		return socket;
 	}
 
-	public void setSocket(UDPSocket1 socket) {
+	public void setSocket(UDPSocket socket) {
 		this.socket = socket;
 	}
+	
+	public List<Book> getBookshelf() {
+		return bookshelf;
+	}
 
+	public void setBookshelf(List<Book> bookshelf) {
+		this.bookshelf = bookshelf;
+	}
 
 	//-------------Initialize Testing Data-------------------
 	public void initializeTestingData() {
@@ -354,22 +371,19 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		}
 		
 		Book book = new Book("AAA","BBB",1);
-		bookshelf.add(book);
+		getBookshelf().add(book);
 		book = new Book("CCC","DDD",3);
-		bookshelf.add(book);
+		getBookshelf().add(book);
 		book = new Book("EEE","FFF",3);
-		bookshelf.add(book);
+		getBookshelf().add(book);
 		book = new Book("GGG","HHH",3);
-		bookshelf.add(book);
+		getBookshelf().add(book);
 		book = new Book("III","JJJ",3);
-		bookshelf.add(book);
+		getBookshelf().add(book);
 		
-		try {
-			this.reserveBook("aaabbb", "xxxxxx", "AAA", "BBB");
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.reserveBook("aaabbb", "xxxxxx", "AAA", "BBB");
 		
 	}
+
+	
 }
