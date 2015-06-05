@@ -21,7 +21,11 @@ import java.util.Map;
 
 import models.Book;
 import models.Student;
-
+/**
+ * 
+ * @author Haiyang Sun
+ *
+ */
 public class LibraryServer implements LibraryServerInterface, Runnable {
 	
 	
@@ -61,7 +65,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		}
 			
 	}
-
+	
 	@Override
 	public boolean createAccount(String firstName, String lastName,
 			String emailAddress, String phoneNumber, String username,
@@ -71,6 +75,8 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			
 			Student student = new Student(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);
 			this.addStudent(student);
+			
+			System.out.println(this.nameOfServer + " server create a new account: " + username);
 			
 			log(username, "Create a new account.");
 			
@@ -247,14 +253,8 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 
 	@Override
 	public void run() {
-		
-		
-		
-		
 		this.socket = new UDPSocket(this);
-		socket.start();
-		
-		
+		socket.start();	
 	}
 	
 	public static void main(String[] args) {
@@ -370,18 +370,17 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			this.addStudent(student);
 		}
 		
-		Book book = new Book("AAA","BBB",1);
+		Book book = new Book("AAA","BBB",1000);
 		getBookshelf().add(book);
-		book = new Book("CCC","DDD",3);
+		book = new Book("CCC","DDD",3000);
 		getBookshelf().add(book);
-		book = new Book("EEE","FFF",3);
+		book = new Book("EEE","FFF",3000);
 		getBookshelf().add(book);
-		book = new Book("GGG","HHH",3);
+		book = new Book("GGG","HHH",3000);
 		getBookshelf().add(book);
-		book = new Book("III","JJJ",3);
+		book = new Book("III","JJJ",3000);
 		getBookshelf().add(book);
 		
-		this.reserveBook("aaabbb", "xxxxxx", "AAA", "BBB");
 		
 	}
 

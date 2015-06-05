@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.net.MalformedURLException;
@@ -26,7 +25,6 @@ import java.rmi.RemoteException;
  * @author Eric Watat Lowe
  */
 
-@SuppressWarnings("deprecation")
 public class StudentClient 
 {
    private Scanner scan;
@@ -42,15 +40,30 @@ public class StudentClient
 	 * @param institution
 	 * 		String Variable for Educational Institution
 	 */
-   StudentClient(String institution) throws MalformedURLException, RemoteException, NotBoundException
+   public StudentClient(String institution)
    {
       scan = new Scanner(System.in);
       student = new Student();
       
-      server = (LibraryServerInterface) Naming.lookup("rmi://132.205.93.19:"+ findServer(institution));
+      try {
+		server = (LibraryServerInterface) Naming.lookup("rmi://localhost:"+ findServer(institution));
+	} catch (MalformedURLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (RemoteException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (NotBoundException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
       student.setEducationalIns(institution);
       clientLogFolder = new File("clientLog");
       if(!clientLogFolder.exists()) clientLogFolder.mkdir();  
+   }
+   
+   public StudentClient() {
+	   
    }
    
    /**
@@ -64,9 +77,9 @@ public class StudentClient
 		if(s.equals("Concordia"))
 			server = "4444/Concordia";
 		else if(s.equals("McGill"))
-			server = "4446/McGill";
+			server = "4444/McGill";
 		else if(s.equals("UdeM"))
-			server = "4448/UdeM";
+			server = "4444/UdeM";
 		else
 		{
 			server = "server is not found";
@@ -191,7 +204,7 @@ public class StudentClient
 	 * <p>This Function create an account for a student on the Library server
 	 *    of the institution where the student is registered</p>
 	 */
-   private boolean createAccount() throws RemoteException, IOException
+   public boolean createAccount() throws RemoteException, IOException
    {
       String fname, lname,email,phone;
       do
@@ -299,7 +312,8 @@ public class StudentClient
       
       int choice = 0;
       boolean valid = false;
-      Scanner scan = new Scanner(System.in);
+      @SuppressWarnings("resource")
+	Scanner scan = new Scanner(System.in);
       
       while(!valid)
       {
@@ -343,4 +357,23 @@ public class StudentClient
        
    }
    
+   public void demoCreateAccount(String firstName, String lastName, String emailAddress,
+			String phoneNumber, String username, String password, String eduInstitution) {
+	   try {
+		server.createAccount(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);
+	   } catch (RemoteException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	   }
+   }
+   
+   public void demoReserveBook(String username, String password, String bookName, String authorName) {
+	   try {
+		server.reserveBook(username, password, bookName, authorName);
+	   } catch (RemoteException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	   }
+	   
+   }
 }

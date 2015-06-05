@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 import java.rmi.*;
+
 import server.LibraryServerInterface;
 
 /**
@@ -320,6 +321,7 @@ public class AdminClient {
 			AdminClient adminclient = new AdminClient();
 			System.setSecurityManager(new RMISecurityManager());		
 			int userChoice=0;
+			@SuppressWarnings("resource")
 			Scanner scan =  new Scanner(System.in);
 			Scanner scan2 = new Scanner(System.in);
 			DisplayMenuList();
