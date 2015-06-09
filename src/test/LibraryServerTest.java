@@ -52,8 +52,8 @@ public class LibraryServerTest {
 	@Test
 	public void testReserveBook() {
 		
-		String result = serverOfConcordia.reserveBook("TestUser", "TestPassword", "TestBook", "TestAuthor");
-		assertEquals("Reserve success.", result);
+		boolean result = serverOfConcordia.reserveBook("TestUser", "TestPassword", "TestBook", "TestAuthor");
+		assertEquals(true, result);
 	}
 	
 	@Test

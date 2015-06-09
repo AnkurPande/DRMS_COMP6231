@@ -290,7 +290,12 @@ public class StudentClient
 	      while(bookName.isEmpty() || authorName.isEmpty());
 	  
      
-      System.out.println(server.reserveBook(student.getUserName(),student.getPassword(),bookName,authorName));
+	  if(server.reserveBook(student.getUserName(),student.getPassword(),bookName,authorName)) {
+		  System.out.println("Reserve Success");
+	  } else {
+		  System.out.println("Reserve Fail");
+	  }
+      
       showMenu();
                      
    }

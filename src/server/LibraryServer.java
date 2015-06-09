@@ -86,7 +86,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	}
 
 	@Override
-	public String reserveBook(String username, String password,
+	public boolean reserveBook(String username, String password,
 			String bookName, String authorName)  {
 		
 		String message = null;
@@ -95,27 +95,27 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		if (student == null) {
 			message = "Student Client is NOT existed.";
 			System.out.println(message);
-			return message;
+			return false;
 		}
 		
 		if (!student.getPassword().equals(password)) {
 			message = "Wrong Password.";
 			System.out.println(message);
-			return message;
+			return false;
 		}
 		
 		Book book = this.getBook(bookName);
 		if (book == null){
 			message = "Book is NOT existed.";
 			System.out.println(message);
-			return message;
+			return false;
 		}
 		
 		synchronized (book) {
 			if (book.getNumberCopies() <= 0) {
 				message = "No copies available.";
 				System.out.println(message);
-				return message;
+				return false;
 			}
 			
 			student.getBooks().put(bookName, DEFAULT_DURATION);
@@ -126,7 +126,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		
 			message = "Reserve success.";
 			System.out.println(message);
-			return message;
+			return true;
 		}
 	}
 
@@ -370,11 +370,11 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			this.addStudent(student);
 		}
 		
-		Book book = new Book("AAA","BBB",1000);
+		Book book = new Book("AAA","BBB",Integer.MAX_VALUE);
 		getBookshelf().add(book);
-		book = new Book("CCC","DDD",3000);
+		book = new Book("CCC","DDD",Integer.MAX_VALUE);
 		getBookshelf().add(book);
-		book = new Book("EEE","FFF",3000);
+		book = new Book("EEE","FFF",Integer.MAX_VALUE);
 		getBookshelf().add(book);
 		book = new Book("GGG","HHH",3000);
 		getBookshelf().add(book);
