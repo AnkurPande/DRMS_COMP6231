@@ -3,15 +3,11 @@ package server;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,18 +15,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.omg.CORBA.ORB;
+import org.omg.PortableServer.POA;
+import org.omg.PortableServer.POAHelper;
+
 import models.Book;
 import models.Student;
+import corbaLibrary.CorbaLibraryServerPOA;
 /**
  * 
  * @author Haiyang Sun
  *
  */
-public class LibraryServer implements LibraryServerInterface, Runnable {
+public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	
 	
 	private String nameOfServer;
-	private int portOfRMI;
 	private int portOfUDP;
 	
 	private UDPSocket socket;
@@ -39,8 +39,6 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	private  Map<String, Map<String, Student>> studentData = new HashMap<String, Map<String, Student>>();
 	private  List<Integer> listOfUDPPorts = new ArrayList<Integer>();
 	public static final int DEFAULT_DURATION = 14;
-	public static final int PORT_OF_RMI = 4444;
-	
 	
 	
 	
@@ -104,7 +102,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			return false;
 		}
 		
-		Book book = this.getBook(bookName);
+		Book book = this.getBook(bookName, authorName);
 		if (book == null){
 			message = "Book is NOT existed.";
 			System.out.println(message);
@@ -129,6 +127,55 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			return true;
 		}
 	}
+	
+	@Override
+	public boolean reserveInterLibrary(String username, String password, String bookName, String authorName) {
+		
+		if(this.reserveBook(username, password, bookName, authorName)) {
+			return true;
+		} else {
+			for(int port: listOfUDPPorts) {
+				if(port != this.portOfUDP) {
+					
+					DatagramSocket socket = null;
+					
+					try {
+						socket = new DatagramSocket();
+						InetAddress host = InetAddress.getByName("localhost");
+						
+						byte[] message = ("RIL:" + bookName + "," + authorName).getBytes();
+						DatagramPacket sendPacket = new DatagramPacket(message, message.length, host, port);
+						socket.send(sendPacket);
+						
+						byte[] buffer = new byte[1000];
+						DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
+						socket.receive(receivedPacket);
+						
+						String result = new String(receivedPacket.getData());
+						
+						if(result.equalsIgnoreCase("true")) {
+							
+							Student student = this.getStudent(username);
+							student.getBooks().put(bookName, DEFAULT_DURATION);
+							
+							log(username, "Reserve a book from other library. " + "Book name: "+ bookName + " Book author: " + authorName);
+
+							return true;
+						}
+						
+					
+					} catch (SocketException e) {
+						System.out.println("Socket: " + e.getMessage());
+					} catch (IOException e) {
+						System.out.println("IO: " + e.getMessage());
+					} finally {
+						if (socket != null) socket.close();
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public  String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays) {
@@ -151,7 +198,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 					socket = new DatagramSocket();
 					InetAddress host = InetAddress.getByName("localhost");
 					
-					byte[] message = numDays.getBytes();
+					byte[] message = ("GNR:" + numDays).getBytes();
 					DatagramPacket sendPacket = new DatagramPacket(message, message.length, host, port);
 					socket.send(sendPacket);
 					
@@ -178,8 +225,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 	}
 
 	@Override
-	public boolean setDuration(String username, String bookName, int numOfDays)
-			throws RemoteException {
+	public boolean setDuration(String username, String bookName, int numOfDays) {
 		
 		Student student = this.getStudent(username);
 		synchronized(student) {
@@ -212,6 +258,26 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		}
 		sb.append( "..." );
 		return sb.toString();
+		
+	}
+	
+	public boolean checkBookAvailability (String bookName, String authorName) {
+		Book book = this.getBook(bookName, authorName);
+		if (book == null){
+			return false;
+		}
+		
+		synchronized (book) {
+			if (book.getNumberCopies() <= 0) {
+				return false;
+			}
+			
+			book.setNumberCopies(book.getNumberCopies() -1);
+			
+			log("Remote Library", "Local book reserved by a remote library. " + "Book name: "+ bookName + " Book author: " + authorName);
+
+			return true;
+		}
 	}
 	
 	//------------DATA-------------
@@ -241,10 +307,10 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		}	
 	} 
 	
-	public Book getBook(String bookName) {
+	public Book getBook(String bookName, String authorName) {
 		
 		for(Book book: getBookshelf()) {
-			if(book.getBookName().equalsIgnoreCase(bookName)) {
+			if(book.getBookName().equalsIgnoreCase(bookName) && book.getBookAuthor().equalsIgnoreCase(authorName)) {
 				return book;
 			}
 		}
@@ -253,6 +319,8 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 
 	@Override
 	public void run() {
+		
+		
 		this.socket = new UDPSocket(this);
 		socket.start();	
 	}
@@ -267,24 +335,41 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		LibraryServer serverOfUdeM = new LibraryServer("UdeM", 4449);
 		new Thread(serverOfUdeM).start();
 		
-		try{
-			Registry registry = LocateRegistry.createRegistry(PORT_OF_RMI);
+		try {
+			ORB orb = ORB.init(args, null);
+			POA rootPOA = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 			
-			Remote obj = UnicastRemoteObject.exportObject(serverOfConcordia, PORT_OF_RMI);
-			registry.bind(serverOfConcordia.nameOfServer, obj);
+			byte[] id = rootPOA.activate_object(serverOfConcordia);
+			org.omg.CORBA.Object ref = rootPOA.id_to_reference(id);
+			String ior = orb.object_to_string(ref);
+			PrintWriter fw = new PrintWriter("ior/ior_"+ serverOfConcordia.getNameOfServer() + ".txt");
+			fw.println(ior);
+			fw.flush();
+			fw.close();
 			System.out.println(serverOfConcordia.nameOfServer + " Server is running!");
-
-			obj = UnicastRemoteObject.exportObject(serverOfMcGill, PORT_OF_RMI);
-			registry.bind(serverOfMcGill.nameOfServer, obj);
+			
+			id = rootPOA.activate_object(serverOfMcGill);
+			ref = rootPOA.id_to_reference(id);
+			ior = orb.object_to_string(ref);
+			fw = new PrintWriter("ior/ior_"+ serverOfMcGill.getNameOfServer() + ".txt");
+			fw.println(ior);
+			fw.flush();
+			fw.close();
 			System.out.println(serverOfMcGill.nameOfServer + " Server is running!");
-
-			obj = UnicastRemoteObject.exportObject(serverOfUdeM, PORT_OF_RMI);
-			registry.bind(serverOfUdeM.nameOfServer, obj);
+			
+			id = rootPOA.activate_object(serverOfUdeM);
+			ref = rootPOA.id_to_reference(id);
+			ior = orb.object_to_string(ref);
+			fw = new PrintWriter("ior/ior_"+ serverOfUdeM.getNameOfServer() + ".txt");
+			fw.println(ior);
+			fw.flush();
+			fw.close();
 			System.out.println(serverOfUdeM.nameOfServer + " Server is running!");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
+		
 	}
 	
 	//------------Log----------------
@@ -313,13 +398,6 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		this.nameOfServer = nameOfServer;
 	}
 
-	public int getPortOfRMI() {
-		return portOfRMI;
-	}
-
-	public void setPortOfRMI(int portOfRMI) {
-		this.portOfRMI = portOfRMI;
-	}
 
 	public int getPortOfUDP() {
 		return portOfUDP;
@@ -383,6 +461,9 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		
 		
 	}
+
+	
+	
 
 	
 }

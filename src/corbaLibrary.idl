@@ -1,0 +1,14 @@
+module corbaLibrary {
+	interface CorbaLibraryServer {
+		boolean createAccount(in string firstName, in string lastName, in string emailAddress, in string phoneNumber, 
+						      in string username, in string password, in string eduInstitution);	
+		boolean reserveBook (in string username, in string password, in string bookName, in string authorName);
+		
+		boolean reserveInterLibrary (in string username, in string password, in string bookName, 
+									 in string authorName);
+		string getNonRetuners (in string adminUsername, in string adminPassword, 
+							    in string eduInstitution, in string numDays);
+		boolean setDuration (in string username, in string bookName, in long numDays);
+		
+	};
+};
