@@ -143,7 +143,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 						socket = new DatagramSocket();
 						InetAddress host = InetAddress.getByName("localhost");
 						
-						byte[] message = ("RIL:" + bookName + "," + authorName).getBytes();
+						byte[] message = ("RIL:" + bookName + ":" + authorName).getBytes();
 						DatagramPacket sendPacket = new DatagramPacket(message, message.length, host, port);
 						socket.send(sendPacket);
 						
