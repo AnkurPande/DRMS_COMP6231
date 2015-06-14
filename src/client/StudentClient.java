@@ -90,11 +90,11 @@ public class StudentClient
 	String s = edu;
 	String server;
 	if (s.equals("Concordia"))
-		server = "4444/Concordia";
+		server = "ior/ior_Concordia.txt";
 	else if (s.equals("McGill"))
-		server = "4444/McGill";
+		server = "ior/ior_McGill.txt";
 	else if (s.equals("UdeM"))
-		server = "4444/UdeM";
+		server = "ior/ior_UdeM.txt";
 	else{
 		server = "server is not found";
 	}
