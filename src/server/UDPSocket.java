@@ -29,7 +29,10 @@ public class UDPSocket extends Thread {
 			
 			String ior = orb.object_to_string(ref);
 			System.out.println(ior);
-		
+			
+			rootPoa.the_POAManager().activate();
+			orb.run();
+			
 			socket = new DatagramSocket(server.getPortOfUDP());
 			byte[] buffer = new byte[10000];
 			
