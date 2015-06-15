@@ -69,6 +69,8 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			String emailAddress, String phoneNumber, String username,
 			String password, String eduInstitution) {
 		
+		System.out.println("awofje");
+		
 		if(this.getStudent(username) == null) {
 			
 			Student student = new Student(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);

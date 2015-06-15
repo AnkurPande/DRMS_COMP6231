@@ -3,11 +3,14 @@ package client;
 import models.*;
 import server.*;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Date;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.net.MalformedURLException;
@@ -17,6 +20,9 @@ import java.net.MalformedURLException;
 //import java.rmi.RemoteException;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Object;
+
+import corbaLibrary.CorbaLibraryServerHelper;
+import corbaLibrary.CorbaLibraryServerOperations;
 
 /**
  * <h1>Student Client</h1>
@@ -32,7 +38,7 @@ public class StudentClient
 {
    private Scanner scan;
    private Student student;
-   private LibraryServerInterface server;
+   private CorbaLibraryServerOperations server;
    private FileWriter myWriter;
    private File clientLogFolder;
    private ORB orb;
@@ -58,16 +64,13 @@ public class StudentClient
           	reader.close();
           	corbaObject = orb.string_to_object(ior);
           	
-          	server = LibraryServerHelper.narrow(corbaObject);
+          	server = CorbaLibraryServerHelper.narrow(corbaObject);
           	
 	        //server = (LibraryServerInterface) Naming.lookup("rmi://localhost:"+ findServer(institution));
 	  } catch (MalformedURLException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	  } catch (RemoteException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	  } catch (NotBoundException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	  }
@@ -263,17 +266,21 @@ public class StudentClient
          student.setPhoneNumber(phone); 
       
          //calls the remote method on the server to actually create the account
+         
+      
          if(server.createAccount(student.getFirstName(), student.getLastName(), student.getEmailAddress(), student.getPhoneNumber(), student.getUserName(), student.getPassword(), student.getEducationalIns())) 
          {
-               System.out.println("Account Created Successfully!!!");
-               String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+              System.out.println("Account Created Successfully!!!");
+              String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
                                 + " Account created for user: " + student.getUserName() + " on server: "
                                 + student.getEducationalIns();
-               logFile(student.getUserName(),logInfo);
-               aStudent.showMenu();
-               return true;
+              logFile(student.getUserName(),logInfo);
+              aStudent.showMenu();
+              return true;
          }
          else {
+             System.out.println("we are here");
+
                 //TODO get an error message from the server
                 return false;
         }
@@ -287,7 +294,7 @@ public class StudentClient
 	  
 	  Book aBook = selectBook();
 	  
-	  if(server.reserveBook(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getAuthorName())) {
+	  if(server.reserveBook(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getBookAuthor())) {
 		  System.out.println("Reserve Success");
 	  } else {
 		  System.out.println("Reserve Fail");
@@ -328,7 +335,7 @@ public class StudentClient
 	      
 	      Book aBook = new Book();
 	      aBook.setBookName(bookName);
-	      aBook.setAuthorName(authorName);
+	      aBook.setBookAuthor(authorName);
 	      
 	      return aBook;
    	
@@ -343,7 +350,7 @@ public class StudentClient
      
 	  Book aBook = selectBook();
 	  
-	  if(server.reserveInterLibrary(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getAuthorName())) {
+	  if(server.reserveInterLibrary(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getBookAuthor())) {
 		  System.out.println("Reserve Success");
 	  } else {
 		  System.out.println("Reserve Fail");
@@ -359,7 +366,7 @@ public class StudentClient
 	 */
    public static void main(String args[]) throws IOException {
    	
-	  System.setSecurityManager(new RMISecurityManager());
+	 // System.setSecurityManager(new RMISecurityManager());
           System.out.println("WELCOME TO ONLINE LIBRARY SYSTEM");
           System.out.println();
           System.out.println("Select your instution:");
@@ -371,7 +378,7 @@ public class StudentClient
           int choice = 0;
           boolean valid = false;
           
-          @SuppressWarnings("resource")
+         // @SuppressWarnings("resource")
 	  Scanner scan = new Scanner(System.in);
 	  
 	  ORB orb = ORB.init(args,null);

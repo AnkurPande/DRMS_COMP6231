@@ -18,23 +18,12 @@ public class UDPSocket extends Thread {
 	@Override
 	public void run() {
 		DatagramSocket socket = null;
-		
-		try try {
-			ORB orb = ORB.init(args,null);
-			POA rootPoa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+		String responseMessageString = "";
+		try {
 			
-			
-			byte[] id = rootPoa.activate_object(this); 
-			org.omg.CORBA.Object ref = rootPoa.id_to_reference(id);
-			
-			String ior = orb.object_to_string(ref);
-			System.out.println(ior);
-			
-			rootPoa.the_POAManager().activate();
-			orb.run();
 			
 			socket = new DatagramSocket(server.getPortOfUDP());
-			byte[] buffer = new byte[10000];
+			byte[] buffer = new byte[1000];
 			
 			while(true){
 				DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
@@ -44,11 +33,11 @@ public class UDPSocket extends Thread {
 				String receivedMessageString = new String(message);
 				
 				String[] requestParts = receivedMessageString.split(":");
-				String responseMessageString = "";
+				
 				if(requestParts.length == 2 ) {
 					//non return request
 					String numDays = receivedMessageString.trim();
-					String responseMessageString = server.checkNonRetuners(numDays);
+					responseMessageString = server.checkNonRetuners(numDays);
 				}
 				else {
 					//reserve request
