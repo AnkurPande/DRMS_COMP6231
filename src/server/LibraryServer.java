@@ -155,6 +155,8 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 						
 						String result = new String(receivedPacket.getData());
 						
+						System.out.println(result);
+						
 						if(result.equalsIgnoreCase("true")) {
 							
 							Student student = this.getStudent(username);
@@ -264,19 +266,29 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	}
 	
 	public boolean checkBookAvailability (String bookName, String authorName) {
+		
+		System.out.println(bookName + nameOfServer);
+		System.out.println(authorName);
+		
+		
 		Book book = this.getBook(bookName, authorName);
+		
 		if (book == null){
+			
 			return false;
 		}
 		
 		synchronized (book) {
 			if (book.getNumberCopies() <= 0) {
+				System.out.println("no copies book");
+
 				return false;
 			}
 			
 			book.setNumberCopies(book.getNumberCopies() -1);
 			
 			log("Remote Library", "Local book reserved by a remote library. " + "Book name: "+ bookName + " Book author: " + authorName);
+			System.out.println("book");
 
 			return true;
 		}
@@ -350,6 +362,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			fw.close();
 			System.out.println(serverOfConcordia.nameOfServer + " Server is running!");
 			
+			
 			id = rootPOA.activate_object(serverOfMcGill);
 			ref = rootPOA.id_to_reference(id);
 			ior = orb.object_to_string(ref);
@@ -367,6 +380,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			fw.flush();
 			fw.close();
 			System.out.println(serverOfUdeM.nameOfServer + " Server is running!");
+			
+			rootPOA.the_POAManager().activate();
+			orb.run();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -428,14 +444,14 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	//-------------Initialize Testing Data-------------------
 	public void initializeTestingData() {
 		if(this.nameOfServer.equalsIgnoreCase("Concordia")) {
-			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "xxxxxx", "Concordia");
+			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "12345678", "Concordia");
 			this.addStudent(student);
 			student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "Concordia");
 			this.addStudent(student);
 			student = new Student("Ccc","Ddd", "dd@dddd.dd","5141111111", "cccddd", "xxxxx", "Concordia");
 			this.addStudent(student);
 		}else if (this.nameOfServer.equalsIgnoreCase("McGill")) { 
-			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "xxxxxx", "McGill");
+			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "12345678", "McGill");
 			this.addStudent(student);
 			student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "McGill");
 			this.addStudent(student);
@@ -450,6 +466,12 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			this.addStudent(student);
 		}
 		
+		if(this.getNameOfServer().equalsIgnoreCase("McGill")) {
+			Book book = new Book("testbook", "testauthor", 134);
+			this.getBookshelf().add(book);
+			System.out.println("add success");
+			
+		}
 		Book book = new Book("AAA","BBB",Integer.MAX_VALUE);
 		getBookshelf().add(book);
 		book = new Book("CCC","DDD",Integer.MAX_VALUE);

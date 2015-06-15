@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Object;
 
+import corbaLibrary.CorbaLibraryServer;
 import corbaLibrary.CorbaLibraryServerHelper;
 import corbaLibrary.CorbaLibraryServerOperations;
 
@@ -38,7 +39,7 @@ public class StudentClient
 {
    private Scanner scan;
    private Student student;
-   private CorbaLibraryServerOperations server;
+   private CorbaLibraryServer server;
    private FileWriter myWriter;
    private File clientLogFolder;
    private ORB orb;
