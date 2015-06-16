@@ -1,5 +1,7 @@
 package client;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 import java.rmi.*;
+
+import org.omg.CORBA.ORB;
 
 
 
@@ -101,22 +105,23 @@ public class AdminClient {
 		{
 			String server = FindServer(this.getEducationalInstitution());
 			LibraryServerInterface libraryserver= (LibraryServerInterface)Naming.lookup("rmi://localhost:"+server);
-			result = libraryserver.getNonRetuners("admin","admin","Concordia","5");
+			String[] args = null;
+			ORB orb = ORB.init(args,null);
+			BufferedReader br = new BufferedReader(new FileReader(server));
+			String ior = br.readLine();
+			br.close();
 			
-			/*For Display the result*/
-			if(result!=null)
-			{
-				System.out.println(result);
-			}else
-			{
-				System.out.println("Result is Null!!!");
-			}
+			org.omg.CORBA.Object o = orb.string_to_object(ior);
+			LibraryService lsi = LibraryServiceHelper.narrow(o);
+			result = lsi.getNonRetuners("admin","admin");
+			if(result!=null) System.out.println(result);
+			else System.out.println("result is null !");
+			
 		}catch(Exception e)
 		{
 			e.getMessage();
 		}
-		
-		
+	
 	}
 	
 	
