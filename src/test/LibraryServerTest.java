@@ -33,8 +33,11 @@ public class LibraryServerTest {
 		new Thread(serverOfMcGill).start();
 		new Thread(serverOfUdeM).start();
 		
-		Book book = new Book("TestBook","TestAuthor",1);
+		Book book = new Book("TestBook", "TestAuthor", 1);
 		serverOfConcordia.getBookshelf().add(book);
+		
+		book = new Book("TestReserveInterLib", "TestAuthor", 1);
+		serverOfMcGill.getBookshelf().add(book);
 		
 		Student student = new Student("Test", "Test", "cc@cccc.cc", "51411111111", "TestUser", "TestPassword", "Concordia");
 		serverOfConcordia.addStudent(student);
@@ -61,5 +64,11 @@ public class LibraryServerTest {
 		
 		String s = serverOfConcordia.getNonRetuners("admin", "admin", "Concordia", "15");
 		assertEquals("Concordia", s.substring(0, 9));
+	}
+	
+	@Test
+	public void testReserveInterLibrary() {
+		boolean result = serverOfConcordia.reserveInterLibrary("TestUser", "TestPassword", "TestReserveInterLib", "TestAuthor");
+		assertTrue(result);
 	}
 }
