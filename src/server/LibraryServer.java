@@ -68,9 +68,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	public boolean createAccount(String firstName, String lastName,
 			String emailAddress, String phoneNumber, String username,
 			String password, String eduInstitution) {
-		
-		System.out.println("awofje");
-		
+				
 		if(this.getStudent(username) == null) {
 			
 			Student student = new Student(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);
@@ -133,6 +131,23 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	@Override
 	public boolean reserveInterLibrary(String username, String password, String bookName, String authorName) {
 		
+
+		String message = null;
+		
+			Student student = this.getStudent(username);
+			if (student == null) {
+				message = "Student Client is NOT existed.";
+				System.out.println(message);
+				return false;
+			}
+		
+			if (!student.getPassword().equals(password)) {
+				message = "Wrong Password.";
+				System.out.println(message);
+				return false;
+			}
+	
+			
 		if(this.reserveBook(username, password, bookName, authorName)) {
 			return true;
 		} else {
@@ -145,8 +160,8 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 						socket = new DatagramSocket();
 						InetAddress host = InetAddress.getByName("localhost");
 						
-						byte[] message = ("RIL:" + bookName + ":" + authorName).getBytes();
-						DatagramPacket sendPacket = new DatagramPacket(message, message.length, host, port);
+						byte[] udpMessage = ("RIL:" + bookName + ":" + authorName).getBytes();
+						DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, port);
 						socket.send(sendPacket);
 						
 						byte[] buffer = new byte[1000];
@@ -157,10 +172,10 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 						
 						System.out.println(result);
 						
-						if(result.equalsIgnoreCase("true")) {
+						if(result.trim().equalsIgnoreCase("true")) {
 							
-							Student student = this.getStudent(username);
-							student.getBooks().put(bookName, DEFAULT_DURATION);
+							Student localStudent = this.getStudent(username);
+							localStudent.getBooks().put(bookName, DEFAULT_DURATION);
 							
 							log(username, "Reserve a book from other library. " + "Book name: "+ bookName + " Book author: " + authorName);
 
@@ -458,7 +473,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			student = new Student("Ccc","Ddd", "dd@dddd.dd","5141111111", "cccddd", "xxxxx", "McGill");
 			this.addStudent(student);
 		}else if (this.nameOfServer.equalsIgnoreCase("UdeM")) {
-			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "xxxxxx", "UdeM");
+			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "12345678", "UdeM");
 			this.addStudent(student);
 			student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "UdeM");
 			this.addStudent(student);
