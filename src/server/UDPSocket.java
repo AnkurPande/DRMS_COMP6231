@@ -41,7 +41,7 @@ public class UDPSocket extends Thread {
 				}
 				else {
 					//reserve request
-					responseMessageString = server.checkBookAvailability(requestParts[1],requestParts[2])?"true":"false";
+					responseMessageString = server.checkBookAvailability(requestParts[1].trim(),requestParts[2].trim())?"true":"false";
 					
 				}
 				
