@@ -31,6 +31,12 @@ public class AdminClient {
 	private static AdminClient admin =null;
 	private String userName , password, bookName,numOfDays;
 	
+	/**
+	 * @param institution
+	 * @param orb
+	 * @throws IOException
+	 * Initialize the servers.
+	 */
 	public AdminClient(String institution, ORB orb) throws IOException{
 		scan = new Scanner(System.in);
 		this.orb = orb;
@@ -54,6 +60,9 @@ public class AdminClient {
         if(!clientLogFolder.exists()) clientLogFolder.mkdir();  
 	}
 	
+	/**
+	 * Shows the options available for user.
+	 */
 	public void showMenu(){
 		boolean valid = false;
 	    int choice = 0;
@@ -86,6 +95,11 @@ public class AdminClient {
         	}
        }
 	}
+	
+	/**
+	 * @throws IOException
+	 * The list of non returner students is displayed .
+	 */
 	public void getNonReturners() throws IOException{
 		String result;
 		System.out.println("Enter Username: ");
@@ -102,6 +116,10 @@ public class AdminClient {
         admin.showMenu();
 	}
 	
+	/**
+	 * @throws IOException
+	 * This method is used to set duration for the books in the library.
+	 */
 	public void setDuration() throws IOException{
 		System.out.println("Enter Username: ");
 		this.userName =scan.next();
@@ -122,6 +140,11 @@ public class AdminClient {
         }
         admin.showMenu();
 	}
+	
+	/**
+	 * @param institute
+	 * @return library server instance
+	 */
 	public String getServer(String institute){
 
 		String instituteName = institute;
@@ -138,6 +161,11 @@ public class AdminClient {
 		return server;
 	}
 	
+	/**
+	 * @param logInfo
+	 * @param fileName
+	 * @throws IOException
+	 */
 	public void setLogger(String logInfo, String fileName) throws IOException{
 		File adminClientFile = new File("clientLog",fileName); 
 	   	 if(!adminClientFile.exists()) adminClientFile.createNewFile();
