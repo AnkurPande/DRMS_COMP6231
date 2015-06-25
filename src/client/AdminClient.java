@@ -24,11 +24,9 @@ public class AdminClient {
 	private CorbaLibraryServer server;
 	private FileWriter myWriter;
 	private File clientLogFolder;
-	private ORB orb;
-	private BufferedReader reader;
 	private org.omg.CORBA.Object corbaObject;
 	private String instituteName =null;
-	private static AdminClient admin =null;
+	private static AdminClient admin;
 	private String userName , password, bookName,numOfDays;
 	
 	/**
@@ -39,9 +37,7 @@ public class AdminClient {
 	 */
 	public AdminClient(String institution, ORB orb) throws IOException{
 		scan = new Scanner(System.in);
-		this.orb = orb;
-    
-        try {
+		try {
         	BufferedReader reader = new BufferedReader(new FileReader(getServer(institution)));
         	String ior = reader.readLine();
         	reader.close();
@@ -108,7 +104,10 @@ public class AdminClient {
         this.password =scan.next();
         System.out.println("Enter No Of Days: ");
         this.numOfDays = scan.next();
+        
+        
         result =server.getNonRetuners(this.userName, this.password, this.instituteName, this.numOfDays);
+        
         System.out.println(result);
         String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
                 		+ "Non Returners : " +result;
@@ -182,7 +181,8 @@ public class AdminClient {
 		// TODO Auto-generated method stub
 		int choice = 0;
         boolean valid = false;
-        Scanner scan = new Scanner(System.in);
+        @SuppressWarnings("resource")
+		Scanner scan = new Scanner(System.in);
 	  		
         System.out.println("WELCOME TO ONLINE LIBRARY SYSTEM");
         System.out.println();
@@ -194,7 +194,7 @@ public class AdminClient {
         System.out.println("4- Exit");
         System.out.println("\n Enter Your Choice: " );
 		
-        AdminClient admin = null;
+        admin = null;
         ORB orb = ORB.init(args,null);
     
         while (!valid) {
@@ -205,7 +205,7 @@ public class AdminClient {
                        	valid = true; break;
                 case 2: admin  = new AdminClient("McGill",orb);
                        	valid = true; break;
-                case 3:	admin  = new AdminClient("Udem",orb);
+                case 3:	admin  = new AdminClient("UdeM",orb);
                        	valid = true; break;
                 case 4: System.out.println("Exited"); 
 						System.exit(1); break;       
