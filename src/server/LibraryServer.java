@@ -20,6 +20,7 @@ import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAHelper;
 
 import models.Book;
+import models.LibraryServerInfo;
 import models.Student;
 import corbaLibrary.CorbaLibraryServerPOA;
 /**
@@ -38,18 +39,25 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	private  List<Book> bookshelf = new ArrayList<Book>();
 	private  Map<String, Map<String, Student>> studentData = new HashMap<String, Map<String, Student>>();
 	private  List<Integer> listOfUDPPorts = new ArrayList<Integer>();
+	
+	
 	public static final int DEFAULT_DURATION = 14;
+	public static final int COCORDIA_UDP_PORT = 4445;
+	public static final int MCGILL_UDP_PORT = 4447;
+	public static final int UDEM_UDP_PORT = 4449;
+
 	
 	
 	
-	public LibraryServer(String nameOfServer, int portOfUDP) {
+	
+	public LibraryServer(LibraryServerInfo info) {
 		
-		this.nameOfServer = nameOfServer;
-		this.portOfUDP = portOfUDP;
+		this.nameOfServer = info.getServerName();
+		this.portOfUDP = info.getPortOfUDP();
 		
-		this.listOfUDPPorts.add(4445);
-		this.listOfUDPPorts.add(4447);
-		this.listOfUDPPorts.add(4449);
+		this.listOfUDPPorts.add(COCORDIA_UDP_PORT);
+		this.listOfUDPPorts.add(MCGILL_UDP_PORT);
+		this.listOfUDPPorts.add(UDEM_UDP_PORT);
 		
 		initializeTestingData();
 		
@@ -61,9 +69,8 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		}catch(IOException e) {
 			e.getMessage();
 		}
-			
 	}
-	
+
 	@Override
 	public boolean createAccount(String firstName, String lastName,
 			String emailAddress, String phoneNumber, String username,
@@ -357,51 +364,38 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	public static void main(String[] args) {
 		
 		
-		LibraryServer serverOfConcordia = new LibraryServer("Concordia", 4445);
-		new Thread(serverOfConcordia).start();
-		LibraryServer serverOfMcGill = new LibraryServer("McGill", 4447);
-		new Thread(serverOfMcGill).start();
-		LibraryServer serverOfUdeM = new LibraryServer("UdeM", 4449);
-		new Thread(serverOfUdeM).start();
+		List<LibraryServerInfo> serverInfoList = new ArrayList<LibraryServerInfo>();
+		serverInfoList.add(new LibraryServerInfo("Concordia", 4445));
+		serverInfoList.add(new LibraryServerInfo("McGill", 4447));
+		serverInfoList.add(new LibraryServerInfo("UdeM", 4449));
 		
 		try {
+		
 			ORB orb = ORB.init(args, null);
 			POA rootPOA = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+		
+			for(LibraryServerInfo info : serverInfoList) {
 			
-			byte[] id = rootPOA.activate_object(serverOfConcordia);
-			org.omg.CORBA.Object ref = rootPOA.id_to_reference(id);
-			String ior = orb.object_to_string(ref);
-			PrintWriter fw = new PrintWriter("ior/ior_"+ serverOfConcordia.getNameOfServer() + ".txt");
-			fw.println(ior);
-			fw.flush();
-			fw.close();
-			System.out.println(serverOfConcordia.nameOfServer + " Server is running!");
+				LibraryServer currentServer = new LibraryServer(info);
+				new Thread(currentServer).start();
 			
+				byte[] id = rootPOA.activate_object(currentServer);
+				org.omg.CORBA.Object ref = rootPOA.id_to_reference(id);
+				String ior = orb.object_to_string(ref);
+				PrintWriter fw = new PrintWriter("ior/ior_"+ currentServer.getNameOfServer() + ".txt");
+				fw.println(ior);
+				fw.flush();
+				fw.close();
+				System.out.println(currentServer.nameOfServer + " Server is running!");	
 			
-			id = rootPOA.activate_object(serverOfMcGill);
-			ref = rootPOA.id_to_reference(id);
-			ior = orb.object_to_string(ref);
-			fw = new PrintWriter("ior/ior_"+ serverOfMcGill.getNameOfServer() + ".txt");
-			fw.println(ior);
-			fw.flush();
-			fw.close();
-			System.out.println(serverOfMcGill.nameOfServer + " Server is running!");
-			
-			id = rootPOA.activate_object(serverOfUdeM);
-			ref = rootPOA.id_to_reference(id);
-			ior = orb.object_to_string(ref);
-			fw = new PrintWriter("ior/ior_"+ serverOfUdeM.getNameOfServer() + ".txt");
-			fw.println(ior);
-			fw.flush();
-			fw.close();
-			System.out.println(serverOfUdeM.nameOfServer + " Server is running!");
-			
+			}
+
 			rootPOA.the_POAManager().activate();
 			orb.run();
-			
-		} catch (Exception e) {
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		
 		
 	}
 	
@@ -484,7 +478,6 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		if(this.getNameOfServer().equalsIgnoreCase("McGill")) {
 			Book book = new Book("testbook", "testauthor", 134);
 			this.getBookshelf().add(book);
-			System.out.println("add success");
 			
 		}
 		Book book = new Book("AAA","BBB",Integer.MAX_VALUE);

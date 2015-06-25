@@ -1,13 +1,20 @@
 package test;
 
 import java.util.Random;
+
+import org.omg.CORBA.ORB;
+
 import client.StudentClient;
 
 public class Demo implements Runnable {
 	
-	private StudentClient concordiaStudent = new StudentClient("Concordia");
-	private StudentClient mcgillStudent = new StudentClient("McGill");
-	private StudentClient udemStudent = new StudentClient("UdeM");
+	
+	ORB orb = ORB.init(new String[1],null);
+
+	
+	private StudentClient concordiaStudent = new StudentClient("Concordia", orb);
+	private StudentClient mcgillStudent = new StudentClient("McGill",orb);
+	private StudentClient udemStudent = new StudentClient("UdeM",orb);
 	
 	
 	private boolean flag;
@@ -34,9 +41,14 @@ public class Demo implements Runnable {
 			udemStudent.demoCreateAccount(getRandomString(), getRandomString(), getRandomString(),getRandomString(),
 					usernameUdeM,passwordUdeM, getRandomString());
 			
-			concordiaStudent.demoReserveBook(usernameConcordia, passwordConcordia, bookPicker()[0], bookPicker()[1]);
+			concordiaStudent.demoReserveBook(usernameConcordia, passwordConcordia, bookPicker()[0].trim(), bookPicker()[1].trim());
 			mcgillStudent.demoReserveBook(usernameMcGill, passwordMcGill, bookPicker()[0], bookPicker()[1]);
 			udemStudent.demoReserveBook(usernameUdeM, passwordUdeM, bookPicker()[0], bookPicker()[1]);
+			
+			concordiaStudent.demoReserveInterLibrary(usernameConcordia, passwordConcordia, bookPicker()[0], bookPicker()[1]);
+			mcgillStudent.demoReserveInterLibrary(usernameMcGill, passwordMcGill, bookPicker()[0], bookPicker()[1]);
+			udemStudent.demoReserveInterLibrary(usernameUdeM, passwordUdeM, bookPicker()[0], bookPicker()[1]);
+			
 			
 		}
 	}

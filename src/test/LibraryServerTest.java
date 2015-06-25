@@ -6,6 +6,7 @@ package test;
 import static org.junit.Assert.*;
 
 import models.Book;
+import models.LibraryServerInfo;
 import models.Student;
 
 import org.junit.BeforeClass;
@@ -19,9 +20,9 @@ import server.LibraryServer;
  */
 public class LibraryServerTest {
 	
-	private static LibraryServer serverOfConcordia = new LibraryServer("Concordia", 4445);
-	private static LibraryServer serverOfMcGill = new LibraryServer("McGill", 4447);
-	private static LibraryServer serverOfUdeM = new LibraryServer("UdeM", 4449);
+	private static LibraryServer serverOfConcordia = new LibraryServer(new LibraryServerInfo("Concordia", 4445));
+	private static LibraryServer serverOfMcGill = new LibraryServer(new LibraryServerInfo("McGill", 4447));
+	private static LibraryServer serverOfUdeM = new LibraryServer(new LibraryServerInfo("UdeM", 4449));
 
 	/**
 	 * @throws java.lang.Exception

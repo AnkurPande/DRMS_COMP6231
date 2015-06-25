@@ -53,7 +53,7 @@ public class StudentClient
 	 * @param institution
 	 * 		String Variable for Educational Institution
 	 */
-   public StudentClient(String institution, ORB orb) throws IOException
+   public StudentClient(String institution, ORB orb) 
    {
           scan = new Scanner(System.in);
           student = new Student();
@@ -74,7 +74,10 @@ public class StudentClient
 	  } catch (RemoteException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
-	  }
+	  } catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
 	  
           student.setEducationalIns(institution);
           clientLogFolder = new File("clientLog");
@@ -365,7 +368,7 @@ public class StudentClient
 	 * <h1></h1>
 	 * <p>This is Where the execution of the program starts</p>
 	 */
-   public static void main(String args[]) throws IOException {
+   public static void main(String args[]) {
    	
 	 // System.setSecurityManager(new RMISecurityManager());
           System.out.println("WELCOME TO ONLINE LIBRARY SYSTEM");
@@ -425,21 +428,23 @@ public class StudentClient
    
    public void demoCreateAccount(String firstName, String lastName, String emailAddress,
 			String phoneNumber, String username, String password, String eduInstitution) {
-	   try {
-		server.createAccount(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);
-	   } catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	   }
+	  server.createAccount(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);
    }
    
    public void demoReserveBook(String username, String password, String bookName, String authorName) {
+	   
 	   try {
-		server.reserveBook(username, password, bookName, authorName);
-	   } catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		   server.reserveBook(username, password, bookName, authorName);
+
+	   }catch (Exception e) {
+		   System.out.println(e.getMessage());
 	   }
+	    
+   }
+   
+   public void demoReserveInterLibrary(String username, String password, String bookName, String authorName) {
+	   
+	   server.reserveInterLibrary(username, password, bookName, authorName);
 	   
    }
 }
