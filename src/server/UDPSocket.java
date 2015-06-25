@@ -32,7 +32,7 @@ public class UDPSocket extends Thread {
 				byte[] message = requestPacket.getData();
 				String receivedMessageString = new String(message);
 				
-				String[] requestParts = receivedMessageString.split(":");
+				String[] requestParts = receivedMessageString.split(",");
 				
 				if(requestParts.length == 2 ) {
 					//non return request
