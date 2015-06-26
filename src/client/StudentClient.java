@@ -9,18 +9,11 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Date;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.net.MalformedURLException;
-//import java.rmi.Naming;
-//import java.rmi.NotBoundException;
-//import java.rmi.RMISecurityManager;
-//import java.rmi.RemoteException;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Object;
-
 import corbaLibrary.CorbaLibraryServer;
 import corbaLibrary.CorbaLibraryServerHelper;
 import corbaLibrary.CorbaLibraryServerOperations;
@@ -69,9 +62,6 @@ public class StudentClient
           	
 	        //server = (LibraryServerInterface) Naming.lookup("rmi://localhost:"+ findServer(institution));
 	  } catch (MalformedURLException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	  } catch (RemoteException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	  } catch (IOException e) {
@@ -294,17 +284,24 @@ public class StudentClient
 	 * <h1></h1>
 	 * <p>This Function reserve a book for a registered student</p>
 	 */
-   public void reserveBook() throws IOException {
+   public boolean reserveBook() throws IOException {
 	  
 	  Book aBook = selectBook();
 	  
 	  if(server.reserveBook(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getBookAuthor())) {
 		  System.out.println("Reserve Success");
+		  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                  + " Book: "+aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
+                  + student.getEducationalIns();
+          logFile(student.getUserName(),logInfo);
+          showMenu();
+          
+          return true;
 	  } else {
 		  System.out.println("Reserve Fail");
+		  
+		  return false;
 	  }
-      
-          showMenu();
                      
    }
    
@@ -350,17 +347,24 @@ public class StudentClient
 	 * <h1></h1>
 	 * <p>This Function reserve a book for a registered student</p>
 	 */
-   public void reserveInterLibrary() throws IOException {
+   public boolean reserveInterLibrary() throws IOException {
      
 	  Book aBook = selectBook();
 	  
 	  if(server.reserveInterLibrary(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getBookAuthor())) {
 		  System.out.println("Reserve Success");
+		  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                  + " Book: "+ aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
+                  + student.getEducationalIns();
+          logFile(student.getUserName(),logInfo);
+          showMenu();
+          
+          return true;
 	  } else {
 		  System.out.println("Reserve Fail");
+		  
+		  return false;
 	  }
-      
-         showMenu();
                      
    }
    
