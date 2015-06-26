@@ -1,24 +1,60 @@
 package test;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.omg.CORBA.ORB;
 
 import client.StudentClient;
 
+/**
+ * The Class Demo.
+ * 
+ * @author Haiyang Sun
+ */
 public class Demo implements Runnable {
 	
+	/** The thread number. */
+	private int threadNumber;
 	
+	/** The running time. */
+	private long runningTime;
+	
+	/**
+	 * Instantiates a new demo.
+	 *
+	 * @param i the i
+	 */
+	public Demo(int i) {
+		setThreadNumber(i);
+	}
+	
+	/** The orb. */
 	ORB orb = ORB.init(new String[1],null);
-
 	
+	/** The concordia student. */
+	//Initialize three student client
 	private StudentClient concordiaStudent = new StudentClient("Concordia", orb);
+	
+	/** The mcgill student. */
 	private StudentClient mcgillStudent = new StudentClient("McGill",orb);
+	
+	/** The udem student. */
 	private StudentClient udemStudent = new StudentClient("UdeM",orb);
 	
 	
+	/** The flag to control demo. */
 	private boolean flag;
 	
+	/**
+	 * Demo method.
+	 */
 	public void demo() {
 		
 		flag = true;
@@ -34,17 +70,19 @@ public class Demo implements Runnable {
 			String usernameUdeM = getRandomString();
 			String passwordUdeM = getRandomString();
 			
+			//CreateAccount
 			concordiaStudent.demoCreateAccount(getRandomString(), getRandomString(), getRandomString(),getRandomString(),
 					usernameConcordia,passwordConcordia, getRandomString());
 			mcgillStudent.demoCreateAccount(getRandomString(), getRandomString(), getRandomString(),getRandomString(),
 					usernameMcGill,passwordMcGill, getRandomString());
 			udemStudent.demoCreateAccount(getRandomString(), getRandomString(), getRandomString(),getRandomString(),
 					usernameUdeM,passwordUdeM, getRandomString());
-			
+			//ReserveBook
 			concordiaStudent.demoReserveBook(usernameConcordia, passwordConcordia, bookPicker()[0].trim(), bookPicker()[1].trim());
 			mcgillStudent.demoReserveBook(usernameMcGill, passwordMcGill, bookPicker()[0], bookPicker()[1]);
 			udemStudent.demoReserveBook(usernameUdeM, passwordUdeM, bookPicker()[0], bookPicker()[1]);
 			
+			//ReserveBookInterLibrary
 			concordiaStudent.demoReserveInterLibrary(usernameConcordia, passwordConcordia, bookPicker()[0], bookPicker()[1]);
 			mcgillStudent.demoReserveInterLibrary(usernameMcGill, passwordMcGill, bookPicker()[0], bookPicker()[1]);
 			udemStudent.demoReserveInterLibrary(usernameUdeM, passwordUdeM, bookPicker()[0], bookPicker()[1]);
@@ -53,6 +91,11 @@ public class Demo implements Runnable {
 		}
 	}
 	
+	/**
+	 * Gets the random string.
+	 *
+	 * @return the random string
+	 */
 	private String getRandomString() {
         final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder randomString = new StringBuilder();
@@ -65,6 +108,11 @@ public class Demo implements Runnable {
         return randomString.toString();
     }
 	
+	/**
+	 * Book picker.
+	 *
+	 * @return the string[]
+	 */
 	private String[] bookPicker() {
 		
 		String[] bookA = new String[2];
@@ -76,16 +124,16 @@ public class Demo implements Runnable {
 		bookC[1] = "DDD";
 		
 		String[] bookE = new String[2];
-		bookA[0] = "EEE";
-		bookA[1] = "FFF";
+		bookE[0] = "EEE";
+		bookE[1] = "FFF";
 		
 		String[] bookG = new String[2];
-		bookC[0] = "GGG";
-		bookC[1] = "HHH";
+		bookG[0] = "GGG";
+		bookG[1] = "HHH";
 		
 		String[] bookI = new String[2];
-		bookA[0] = "III";
-		bookA[1] = "JJJ";
+		bookI[0] = "III";
+		bookI[1] = "JJJ";
 		
 		Random rnd = new Random();
 		int index = (int) (rnd.nextFloat() * 4);
@@ -100,18 +148,104 @@ public class Demo implements Runnable {
 		
 		
 	}
+	
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
-		
+		//Schedule time to stop.
+		this.setRunningTime(180);
+		Timer timer = new Timer();
+		timer.schedule(new Stop(), runningTime*1000);
 		demo();
+
 	}
 	
 	
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 */
 	public static void main(String[] args) {
 		
+		//Initialize log file
+		try{
+			File f = new File( "demo_log.txt");
+			if(!f.exists())
+				f.createNewFile();
+		}catch(IOException e) {
+			e.getMessage();
+		}
+		
 		for(int i=0; i<10; i++) {
-			Thread thread = new Thread(new Demo());
+			Thread thread = new Thread(new Demo(i+1));
 			thread.start();
+			String activity = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" Demo Thread " + (i+1) + " Start running!";
+			log(activity);
+			System.out.println(activity);
 		}
 	}
+	
+	/**
+	 * Logger.
+	 *
+	 * @param activity the activity
+	 */
+	public static void log(String  activity)  {
+		try{
+			File f = new File("demo_log.txt");
+			FileWriter fw = new FileWriter(f,true);
+			fw.write(activity);
+			fw.write("\r\n");
+			fw.flush();
+			fw.close();
+			
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	/*
+	 * Getters & Setters
+	 */
+	
+	public int getThreadNumber() {
+		return threadNumber;
+	}
+
+	public void setThreadNumber(int threadNumber) {
+		this.threadNumber = threadNumber;
+	}
+
+	
+	public long getRunningTime() {
+		return runningTime;
+	}
+
+	public void setRunningTime(long runningTime) {
+		this.runningTime = runningTime;
+	}
+
+	/**
+	 * Inner-class Stop use to stop running.
+	 */
+	public class Stop extends TimerTask {
+
+		
+		@Override
+		public void run() {
+			
+			flag = false;
+			String activity = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" Demo Thread " + threadNumber + "  stop!"
+					+ "Running time: " + runningTime + "s!";
+			System.out.println(activity);
+			log(activity);
+		}
+		
+	}
+	
+	
+	
 }
