@@ -178,19 +178,19 @@ public class StudentClient
                      switch (choice) {
                                        case 1:
               	                              aStudent.validateCredentials();
-                                              aStudent.createAccount();
+                                              aStudent.createAccount(false);
                                               valid = true;
                                               break;
                                        
                                        case 2:
                	                              aStudent.validateCredentials();
-                                              aStudent.reserveBook();
+                                              aStudent.reserveBook(false);
                                               valid = true;
                                               break;
                                               
                                        case 3:
                	                              aStudent.validateCredentials();
-                                              aStudent.reserveInterLibrary();
+                                              aStudent.reserveInterLibrary(false);
                                               valid = true;
                                               break;
                 
@@ -218,7 +218,7 @@ public class StudentClient
 	 * <p>This Function create an account for a student on the Library server
 	 *    of the institution where the student is registered</p>
 	 */
-   public boolean createAccount() throws IOException {
+   public boolean createAccount(boolean test) throws IOException {
      
           String fname, lname,email,phone;
           
@@ -265,16 +265,20 @@ public class StudentClient
          if(server.createAccount(student.getFirstName(), student.getLastName(), student.getEmailAddress(), student.getPhoneNumber(), student.getUserName(), student.getPassword(), student.getEducationalIns())) 
          {
               System.out.println("Account Created Successfully!!!");
+              
+              if (test){
+    			  System.out.println("from Server: " + student.getEducationalIns());
+    			  System.out.println();
+    		  }
+              
               String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
                                 + " Account created for user: " + student.getUserName() + " on server: "
                                 + student.getEducationalIns();
               logFile(student.getUserName(),logInfo);
-              aStudent.showMenu();
+              if(!test) showMenu();
               return true;
          }
          else {
-             System.out.println("we are here");
-
                 //TODO get an error message from the server
                 return false;
         }
@@ -284,17 +288,23 @@ public class StudentClient
 	 * <h1></h1>
 	 * <p>This Function reserve a book for a registered student</p>
 	 */
-   public boolean reserveBook() throws IOException {
+   public boolean reserveBook(boolean test) throws IOException {
 	  
 	  Book aBook = selectBook();
 	  
 	  if(server.reserveBook(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getBookAuthor())) {
 		  System.out.println("Reserve Success");
+		  
+		  if (test){
+			  System.out.println("from Server: " + student.getEducationalIns());
+			  System.out.println();
+		  }
+		  
 		  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
                   + " Book: "+aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
                   + student.getEducationalIns();
           logFile(student.getUserName(),logInfo);
-          showMenu();
+          if(!test) showMenu();
           
           return true;
 	  } else {
@@ -347,17 +357,23 @@ public class StudentClient
 	 * <h1></h1>
 	 * <p>This Function reserve a book for a registered student</p>
 	 */
-   public boolean reserveInterLibrary() throws IOException {
+   public boolean reserveInterLibrary(boolean test) throws IOException {
      
 	  Book aBook = selectBook();
 	  
 	  if(server.reserveInterLibrary(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getBookAuthor())) {
 		  System.out.println("Reserve Success");
+		  
+		  if (test){
+			  System.out.println("from Server: " + student.getEducationalIns());
+			  System.out.println();
+		  }
+		  
 		  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
                   + " Book: "+ aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
                   + student.getEducationalIns();
           logFile(student.getUserName(),logInfo);
-          showMenu();
+          if(!test) showMenu();
           
           return true;
 	  } else {
