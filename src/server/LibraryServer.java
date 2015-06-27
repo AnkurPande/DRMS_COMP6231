@@ -33,7 +33,7 @@ import corbaLibrary.CorbaLibraryServerPOA;
 public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	
 	/*
-	 * Properties 
+	 * Properties of server
 	 */
 	private String nameOfServer;
 	
@@ -47,14 +47,30 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	
 	private  List<Integer> listOfUDPPorts = new ArrayList<Integer>();
 	
-	/** The Constant DEFAULT_DURATION. */
-	/*
-	 * Final constant value declaration
+	
+	
+	/**
+	 * The inner class ConstantValue stores all constant values related to server implementation.
+	 * 
+	 * @author Haiyang Sun
 	 */
-	public static final int DEFAULT_DURATION = 14;
-	public static final int COCORDIA_UDP_PORT = 4445;
-	public static final int MCGILL_UDP_PORT = 4447;
-	public static final int UDEM_UDP_PORT = 4449;
+	public class ConstantValue {
+		
+		//Institution names
+		public static final String CONCORDIA = "Concordia";
+		public static final String MCGILL = "McGill";
+		public static final String UDEM = "UdeM";
+		
+		//Default Duration
+		public static final int DEFAULT_DURATION = 14;
+		
+		//UDP Ports
+		public static final int COCORDIA_UDP_PORT = 4445;
+		public static final int MCGILL_UDP_PORT = 4447;
+		public static final int UDEM_UDP_PORT = 4449;
+		
+	}
+
 
 	
 	/*
@@ -73,9 +89,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		this.portOfUDP = info.getPortOfUDP();
 		
 		//Initialize list of UDPPorts
-		this.listOfUDPPorts.add(COCORDIA_UDP_PORT);
-		this.listOfUDPPorts.add(MCGILL_UDP_PORT);
-		this.listOfUDPPorts.add(UDEM_UDP_PORT);
+		this.listOfUDPPorts.add(ConstantValue.COCORDIA_UDP_PORT);
+		this.listOfUDPPorts.add(ConstantValue.MCGILL_UDP_PORT);
+		this.listOfUDPPorts.add(ConstantValue.UDEM_UDP_PORT);
 		
 		initializeTestingData();
 		
@@ -91,7 +107,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	}
 	
 	/**
-	 * Default constructor
+	 * Default constructor.
 	 */
 	public LibraryServer() {}
 
@@ -175,7 +191,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			}
 			
 			//Reserver the book
-			student.getBooks().put(bookName, DEFAULT_DURATION);
+			student.getBooks().put(bookName, ConstantValue.DEFAULT_DURATION);
 			
 			book.setNumberCopies(book.getNumberCopies() -1);
 			
@@ -248,7 +264,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 						
 						if(result.trim().equalsIgnoreCase("true")) {
 							
-							student.getBooks().put(bookName, DEFAULT_DURATION);
+							student.getBooks().put(bookName, ConstantValue.DEFAULT_DURATION);
 							
 							log(username, "Reserve a book from other library. " + "Book name: "+ bookName + " Book author: " + authorName);
 
@@ -499,9 +515,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		//Initialize library server information
 		List<LibraryServerInfo> serverInfoList = new ArrayList<LibraryServerInfo>();
-		serverInfoList.add(new LibraryServerInfo("Concordia", 4445));
-		serverInfoList.add(new LibraryServerInfo("McGill", 4447));
-		serverInfoList.add(new LibraryServerInfo("UdeM", 4449));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.CONCORDIA, ConstantValue.COCORDIA_UDP_PORT));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.MCGILL, ConstantValue.MCGILL_UDP_PORT));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.UDEM, ConstantValue.UDEM_UDP_PORT));
 		
 		//CORBA
 		try {
