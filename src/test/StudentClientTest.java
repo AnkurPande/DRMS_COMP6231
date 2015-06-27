@@ -16,7 +16,7 @@ public class StudentClientTest {
 	private static StudentClient studentConcordia;
 	private static StudentClient studentMcGill;
 	private static StudentClient studentUdeM;
-	private static ORB orb = ORB.init(new String[1],null);
+	private static ORB orb = ORB.init(new String[100],null);
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -29,61 +29,66 @@ public class StudentClientTest {
 
 	@Test
 	public void testCreateAccount() throws IOException {
-		/*create account on different servers*/
 		
-		// create account on Concordia server should succeed
+		/*Test create account on the different servers*/
+		
+		//create account on Concordia
 		studentConcordia.validateCredentials();
-		boolean resultC = studentConcordia.createAccount();
+		boolean resultC = studentConcordia.createAccount(true);
 		assertTrue(resultC);
 		
-		// create account on McGill server should succeed
+		// create account on McGill
 		studentMcGill.validateCredentials();
-		boolean resultM = studentMcGill.createAccount();
+		boolean resultM = studentMcGill.createAccount(true);
 		assertTrue(resultM);
 		
-		// create account on UdeM server should succeed
+		// create account on UdeM
 		studentUdeM.validateCredentials();
-		boolean resultU = studentUdeM.createAccount();
+		boolean resultU = studentUdeM.createAccount(true);
 		assertTrue(resultU);
+		
 	}
 	
 	@Test
 	public void testReserveBook() throws IOException {
-		/*Reserve Book on different servers*/
 		
-		// Reserve Book on Concordia server should succeed
+		/*Test reserve book the on different servers*/
+		
+		// reserve book on Concordia server
 		studentConcordia.validateCredentials();
-		boolean resultC = studentConcordia.reserveBook();;
+		boolean resultC = studentConcordia.reserveBook(true);
 		assertTrue(resultC);
 		
-		// Reserve Book on McGill server should succeed
+		// reserve book on McGill server
 		studentMcGill.validateCredentials();
-		boolean resultM = studentMcGill.reserveBook();
+		boolean resultM = studentMcGill.reserveBook(true);
 		assertTrue(resultM);
 		
-		// Reserve Book on UdeM server should succeed
+		// reserve book on UdeM server
 		studentUdeM.validateCredentials();
-		boolean resultU = studentUdeM.reserveBook();
+		boolean resultU = studentUdeM.reserveBook(true);
 		assertTrue(resultU);
+		
 	}
 	
 	@Test
 	public void testReserveInterLibrary() throws IOException {
-		/*Reserve Inter Library on different servers*/
 		
-		// Reserve Inter Library from Concordia server should succeed
+		/*Test reserve inter library from the different servers*/
+		
+		// reserve inter library from Concordia server
 		studentConcordia.validateCredentials();
-		boolean resultC = studentConcordia.reserveInterLibrary();
+		boolean resultC = studentConcordia.reserveInterLibrary(true);
 		assertTrue(resultC);
 		
-		// Reserve Inter Library from McGill server should succeed
+		// reserve inter library from McGill server
 		studentMcGill.validateCredentials();
-		boolean resultM = studentMcGill.reserveInterLibrary();
+		boolean resultM = studentMcGill.reserveInterLibrary(true);
 		assertTrue(resultM);
 		
-		// Reserve Inter Library from UdeM server should succeed
+		// reserve inter library from Udem server
 		studentUdeM.validateCredentials();
-		boolean resultU = studentUdeM.reserveInterLibrary();
+		boolean resultU = studentUdeM.reserveInterLibrary(true);
 		assertTrue(resultU);
 	}
 
