@@ -5,8 +5,6 @@ package test;
 
 import static org.junit.Assert.*;
 
-import java.net.InetAddress;
-
 import models.Book;
 import models.LibraryServerInfo;
 import models.Student;
@@ -35,9 +33,9 @@ public class LibraryServerTest {
 	public static void setUpBeforeClass() throws Exception {
 		
 		
-		serverOfConcordia = new LibraryServer(new LibraryServerInfo("Concordia",4445, InetAddress.getByName("localhost")));
-		serverOfMcGill = new LibraryServer(new LibraryServerInfo("McGill", 4447, InetAddress.getByName("localhost")));
-		serverOfUdeM = new LibraryServer(new LibraryServerInfo("UdeM", 4449, InetAddress.getByName("localhost")));
+		serverOfConcordia = new LibraryServer(new LibraryServerInfo("Concordia",4445, "localhost"));
+		serverOfMcGill = new LibraryServer(new LibraryServerInfo("McGill", 4447, "localhost"));
+		serverOfUdeM = new LibraryServer(new LibraryServerInfo("UdeM", 4449, "localhost"));
 		
 		//Start three servers
 		new Thread(serverOfConcordia).start();

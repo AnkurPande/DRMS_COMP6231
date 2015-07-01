@@ -49,6 +49,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	
 	private InetAddress ipAddress;
 	
+	private TransactionDelegate currentDelegate;
 	
 	
 	/**
@@ -71,6 +72,14 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		public static final int MCGILL_UDP_PORT = 4447;
 		public static final int UDEM_UDP_PORT = 4449;
 		
+//		public static final String CONCORDIA_IP_ADDRESS = "132.205.45.213";
+//		public static final String MCGILL_IP_ADDRESS = "132.205.45.212";
+//		public static final String UDEM_IP_ADDRESS = "132.205.45.211";
+		
+		public static final String CONCORDIA_IP_ADDRESS = "localhost";
+		public static final String MCGILL_IP_ADDRESS = "localhost";
+		public static final String UDEM_IP_ADDRESS = "localhost";
+		
 	}
 
 
@@ -89,12 +98,11 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		this.nameOfServer = info.getServerName();
 		this.portOfUDP = info.getPortOfUDP();
-		this.ipAddress = info.getIpAddress();
 		
 		//Initialize list of UDPPorts
-		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, "132.205.45.213");
-		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, "132.205.45.212");
-		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, "132.205.45.211");
+		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.CONCORDIA_IP_ADDRESS);
+		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.MCGILL_IP_ADDRESS);
+		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.UDEM_IP_ADDRESS);
 		
 		
 		initializeTestingData();
@@ -246,43 +254,17 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			
 			//Try to reserver from a remote library
 			for(Map.Entry<Integer, String> info : UDPInfo.entrySet()) {
+				
 				if(info.getKey() != this.portOfUDP) {
 					
-					DatagramSocket socket = null;
+					currentDelegate = new TransactionDelegate(info.getValue(),info.getKey(),this);
+					boolean bookIsReadyToReserve = currentDelegate.bookIsReadyToReserve(username, bookName, authorName);
 					
-					try {
-						socket = new DatagramSocket();
-						InetAddress host = InetAddress.getByName(info.getValue());
-						
-						byte[] udpMessage = ("1," + bookName + "," + authorName).getBytes();
-						DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, info.getKey());
-						socket.send(sendPacket);
-						
-						byte[] buffer = new byte[1000];
-						DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
-						socket.receive(receivedPacket);
-						
-						String result = new String(receivedPacket.getData());
-						
-						System.out.println(result);
-						
-						if(result.trim().equalsIgnoreCase("true")) {
-							
-							student.getBooks().put(bookName, ConstantValue.DEFAULT_DURATION);
-							
-							log(username, "Reserve a book from other library. " + "Book name: "+ bookName + " Book author: " + authorName);
-
-							return true;
-						}
-						
-					
-					} catch (SocketException e) {
-						System.out.println("Socket: " + e.getMessage());
-					} catch (IOException e) {
-						System.out.println("IO: " + e.getMessage());
-					} finally {
-						if (socket != null) socket.close();
+					if(bookIsReadyToReserve) {
+						return true;
 					}
+					
+					
 				}
 			}
 		}
@@ -438,12 +420,38 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			
 			book.setNumberCopies(book.getNumberCopies() -1);
 			
-			log("Remote Library", "Local book reserved by a remote library. " + "Book name: "+ bookName + " Book author: " + authorName);
+			
+			log("Remote Library", "Local book pre-reserved by a remote library. " + "Book name: "+ bookName + " Book author: " + authorName);
 			System.out.println("book");
 
 			return true;
 		}
 	}
+	
+	public boolean serverIsAlive(String username, String bookName) {
+		
+		currentDelegate.performInterLibraryReservation();
+		return true;
+	}
+	
+	public void updateStudentDataFromInterLibraryReservation(String username, String bookName) {
+		
+		Student student = this.getStudent(username);
+		student.getBooks().put(bookName, ConstantValue.DEFAULT_DURATION);
+	}
+	
+	public boolean releaseBook(String bookName, String authorName) {
+		
+		Book book = this.getBook(bookName, authorName);
+
+		synchronized(book) {
+			
+			book.setNumberCopies(book.getNumberCopies() + 1);
+		}
+		return true;
+		
+	}
+	
 	
 	/**
 	 * Gets the student by username.
@@ -520,9 +528,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		//Initialize library server information
 		List<LibraryServerInfo> serverInfoList = new ArrayList<LibraryServerInfo>();
-		serverInfoList.add(new LibraryServerInfo(ConstantValue.CONCORDIA, ConstantValue.COCORDIA_UDP_PORT,InetAddress.getByName("localhost")));
-		serverInfoList.add(new LibraryServerInfo(ConstantValue.MCGILL, ConstantValue.MCGILL_UDP_PORT,InetAddress.getByName("localhost")));
-		serverInfoList.add(new LibraryServerInfo(ConstantValue.UDEM, ConstantValue.UDEM_UDP_PORT,InetAddress.getByName("localhost")));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.CONCORDIA, ConstantValue.COCORDIA_UDP_PORT,ConstantValue.CONCORDIA_IP_ADDRESS));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.MCGILL, ConstantValue.MCGILL_UDP_PORT,ConstantValue.MCGILL_IP_ADDRESS));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.UDEM, ConstantValue.UDEM_UDP_PORT,ConstantValue.UDEM_IP_ADDRESS));
 		
 		//CORBA
 		try {

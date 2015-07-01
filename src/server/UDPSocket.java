@@ -41,7 +41,13 @@ public class UDPSocket extends Thread {
 				}
 				else {
 					//reserve request
-					responseMessageString = server.checkBookAvailability(requestParts[1].trim(),requestParts[2].trim())?"true":"false";
+					if(requestParts[0].trim().equalsIgnoreCase("1")) {
+						responseMessageString = server.checkBookAvailability(requestParts[1].trim(),requestParts[2].trim())?"true":"false";
+					}
+					if(requestParts[1].trim().equalsIgnoreCase("2")) {
+						server.releaseBook(requestParts[1].trim(),requestParts[2]);
+						responseMessageString = "RollBack!";
+					}
 					
 				}
 				
