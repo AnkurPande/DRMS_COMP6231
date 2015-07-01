@@ -1,11 +1,5 @@
 package server;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-
 public class TransactionDelegate {
 	
 	private int targetUdpPort;
@@ -32,84 +26,56 @@ public class TransactionDelegate {
 		this.setBookAuthor(authorName);
 		this.setSutdentUsername(username);
 		
-		DatagramSocket socket = null;
+		UDPSender sender = new UDPSender(this.targetUdpPort, this.targetIpAddress);
+		String result = sender.sendMessage("1," + bookName + "," + authorName);
 		
-		try {
-			socket = new DatagramSocket();
-			InetAddress host = InetAddress.getByName(this.getTargetIpAddress());
 			
-			byte[] udpMessage = ("1," + bookName + "," + authorName).getBytes();
-			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetUdpPort());
-			socket.send(sendPacket);
-			
-			byte[] buffer = new byte[1000];
-			DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
-			socket.receive(receivedPacket);
-			
-			String result = new String(receivedPacket.getData());
-			
-			if(result.trim().equalsIgnoreCase("true")) {
+		if(result.trim().equalsIgnoreCase("true")) {
 				
-				
-				try{
+			try{
 
-					if(!server.serverIsAlive(username, bookName)) {
-						this.rollBack();
-					}
-				}catch(Exception e) {
+				if(!server.serverIsAlive(username, bookName)) {
 					this.rollBack();
+					return false;
 				}
-				return true;
+				
+			} catch (Exception e) {
+				this.rollBack();
+				return false;
 			}
 			
-		} catch (SocketException e) {
-			System.out.println("Socket: " + e.getMessage());
-		} catch (IOException e) {
-			System.out.println("IO: " + e.getMessage());
-		} finally {
-			if (socket != null) socket.close();
+			return true;
 		}
+			
+		
 		return false;
 	}
 	
 	public boolean rollBack() {
-		DatagramSocket socket = null;
-
-		try {
-			socket = new DatagramSocket();
-			InetAddress host = InetAddress.getByName(this.getTargetIpAddress());
-			
-			byte[] udpMessage = ("2," + bookName + "," + bookAuthor).getBytes();
-			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetUdpPort());
-			socket.send(sendPacket);
-			
-			byte[] buffer = new byte[1000];
-			DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
-			socket.receive(receivedPacket);
-			
-			String result = new String(receivedPacket.getData());
-			
-			if(result.trim().equalsIgnoreCase("true")) {
+		
+		UDPSender sender = new UDPSender(this.targetUdpPort,this.targetIpAddress);
+		
+		String result = sender.sendMessage("2," + bookName + "," + bookAuthor);
+		
+		if(result.trim().equalsIgnoreCase("true")) {
 				
-				
-				
-				return true;
-			}
-			
-		} catch (SocketException e) {
-			System.out.println("Socket: " + e.getMessage());
-		} catch (IOException e) {
-			System.out.println("IO: " + e.getMessage());
-		} finally {
-			if (socket != null) socket.close();
+			return true;
 		}
+			
+		
 		return false;
 	}
 	
 	public void performInterLibraryReservation() {
 		
 		
-		server.updateStudentDataFromInterLibraryReservation(this.getSutdentUsername(), this.getBookName());
+		server.updateStudentDataFromInterLibraryReservation(this.getSutdentUsername(), this.getBookName(),this.getBookAuthor());
+		
+		UDPSender sender = new UDPSender(this.targetUdpPort,this.targetIpAddress);
+		
+		sender.sendMessage("3," + bookName + "," + bookAuthor);
+		
+		
 	}
 	
 	public int getTargetUdpPort() {

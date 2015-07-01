@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -101,8 +98,8 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		//Initialize list of UDPPorts
 		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.CONCORDIA_IP_ADDRESS);
-		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.MCGILL_IP_ADDRESS);
-		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.UDEM_IP_ADDRESS);
+		this.UDPInfo.put(ConstantValue.MCGILL_UDP_PORT, ConstantValue.MCGILL_IP_ADDRESS);
+		this.UDPInfo.put(ConstantValue.UDEM_UDP_PORT, ConstantValue.UDEM_IP_ADDRESS);
 		
 		
 		initializeTestingData();
@@ -255,7 +252,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			//Try to reserver from a remote library
 			for(Map.Entry<Integer, String> info : UDPInfo.entrySet()) {
 				
-				if(info.getKey() != this.portOfUDP) {
+				if(!info.getKey().equals(this.portOfUDP)) {
 					
 					currentDelegate = new TransactionDelegate(info.getValue(),info.getKey(),this);
 					boolean bookIsReadyToReserve = currentDelegate.bookIsReadyToReserve(username, bookName, authorName);
@@ -263,7 +260,6 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 					if(bookIsReadyToReserve) {
 						return true;
 					}
-					
 					
 				}
 			}
@@ -296,32 +292,16 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		for(Map.Entry<Integer, String> info : UDPInfo.entrySet()) {
 			if(info.getKey() != this.portOfUDP) {
 				
-				DatagramSocket socket = null;
-				String resultFromOther = "";
+				UDPSender sender = new UDPSender(info.getKey(), info.getValue());
 				
-				try {
-					socket = new DatagramSocket();
-					InetAddress host = InetAddress.getByName(info.getValue());
-					
-					byte[] message = ("0," + numDays).getBytes();
-					DatagramPacket sendPacket = new DatagramPacket(message, message.length, host, info.getKey());
-					socket.send(sendPacket);
-					
-					byte[] buffer = new byte[1000];
-					DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
-					socket.receive(receivedPacket);
-					
-					resultFromOther = new String(receivedPacket.getData());
-					
-					finalResult.append(resultFromOther + "\n");
 				
-				} catch (SocketException e) {
-					System.out.println("Socket: " + e.getMessage());
-				} catch (IOException e) {
-					System.out.println("IO: " + e.getMessage());
-				} finally {
-					if (socket != null) socket.close();
-				}
+				String resultFromOther = sender.sendMessage("0," + numDays);
+				
+				
+					
+				finalResult.append(resultFromOther + "\n");
+				
+				
 			}
 		}
 		
@@ -400,9 +380,6 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 */
 	public boolean checkBookAvailability (String bookName, String authorName) {
 		
-		System.out.println(bookName + nameOfServer);
-		System.out.println(authorName);
-		
 		
 		Book book = this.getBook(bookName, authorName);
 		
@@ -422,7 +399,6 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			
 			
 			log("Remote Library", "Local book pre-reserved by a remote library. " + "Book name: "+ bookName + " Book author: " + authorName);
-			System.out.println("book");
 
 			return true;
 		}
@@ -434,10 +410,12 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		return true;
 	}
 	
-	public void updateStudentDataFromInterLibraryReservation(String username, String bookName) {
+	public void updateStudentDataFromInterLibraryReservation(String username, String bookName, String authorName) {
 		
 		Student student = this.getStudent(username);
 		student.getBooks().put(bookName, ConstantValue.DEFAULT_DURATION);
+		log(username, "Reserve a book from remote library. " + "Book name: "+ bookName + " Book author: " + authorName);
+
 	}
 	
 	public boolean releaseBook(String bookName, String authorName) {
@@ -448,10 +426,18 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			
 			book.setNumberCopies(book.getNumberCopies() + 1);
 		}
+		
+		log("Remote Library", "Pre-reserved book released. " + "Book name: "+ bookName + " Book author: " + authorName);
+
 		return true;
 		
 	}
 	
+	public void confirmRemoteReservation(String bookName, String bookAuthor) {
+		
+		log("Remote Library", "Local book reservation confirmed by a remote library. " + "Book name: "+ bookName + " Book author: " + bookAuthor);
+
+	}
 	
 	/**
 	 * Gets the student by username.
