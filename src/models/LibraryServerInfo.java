@@ -1,5 +1,7 @@
 package models;
 
+import java.net.InetAddress;
+
 /**
  * The Class LibraryServerInfo.
  */
@@ -11,16 +13,20 @@ public class LibraryServerInfo {
 	/** The server name. */
 	private String serverName;
 	
+	private InetAddress ipAddress;
+	
 	/**
 	 * Instantiates a new library server info.
 	 *
 	 * @param name the name
 	 * @param port the port
 	 */
-	public LibraryServerInfo(String name, int port) {
+	public LibraryServerInfo(String name, int port, InetAddress inetAddress) {
 		this.serverName = name;
 		this.portOfUDP = port;
+		this.setIpAddress(inetAddress);
 	}
+	
 	
 	/**
 	 * Instantiates a new library server info.
@@ -62,5 +68,17 @@ public class LibraryServerInfo {
 	public void setServerName(String serverName) {
 		this.serverName = serverName;
 	}
+
+
+	public InetAddress getIpAddress() {
+		return ipAddress;
+	}
+
+
+	public void setIpAddress(InetAddress ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+	
 	
 }
