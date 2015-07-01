@@ -47,6 +47,8 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	
 	private  List<Integer> listOfUDPPorts = new ArrayList<Integer>();
 	
+	private InetAddress ipAddress;
+	
 	
 	
 	/**
@@ -87,11 +89,13 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		this.nameOfServer = info.getServerName();
 		this.portOfUDP = info.getPortOfUDP();
+		this.ipAddress = info.getIpAddress();
 		
 		//Initialize list of UDPPorts
 		this.listOfUDPPorts.add(ConstantValue.COCORDIA_UDP_PORT);
 		this.listOfUDPPorts.add(ConstantValue.MCGILL_UDP_PORT);
 		this.listOfUDPPorts.add(ConstantValue.UDEM_UDP_PORT);
+		
 		
 		initializeTestingData();
 		
@@ -510,14 +514,15 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 * The main method.
 	 *
 	 * @param args the arguments
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		//Initialize library server information
 		List<LibraryServerInfo> serverInfoList = new ArrayList<LibraryServerInfo>();
-		serverInfoList.add(new LibraryServerInfo(ConstantValue.CONCORDIA, ConstantValue.COCORDIA_UDP_PORT));
-		serverInfoList.add(new LibraryServerInfo(ConstantValue.MCGILL, ConstantValue.MCGILL_UDP_PORT));
-		serverInfoList.add(new LibraryServerInfo(ConstantValue.UDEM, ConstantValue.UDEM_UDP_PORT));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.CONCORDIA, ConstantValue.COCORDIA_UDP_PORT,InetAddress.getByName("localhost")));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.MCGILL, ConstantValue.MCGILL_UDP_PORT,InetAddress.getByName("localhost")));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.UDEM, ConstantValue.UDEM_UDP_PORT,InetAddress.getByName("localhost")));
 		
 		//CORBA
 		try {
@@ -691,6 +696,14 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		getBookshelf().add(book);
 		
 		
+	}
+
+	public InetAddress getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(InetAddress ipAddress) {
+		this.ipAddress = ipAddress;
 	}
 
 	
