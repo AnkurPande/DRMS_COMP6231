@@ -277,6 +277,7 @@ public class StudentClient
               logFile(student.getUserName(),logInfo);
               if(!test) showMenu();
               return true;
+              
          }
          else {
                 //TODO get an error message from the server

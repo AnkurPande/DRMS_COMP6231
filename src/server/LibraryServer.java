@@ -45,7 +45,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	
 	private  Map<String, Map<String, Student>> studentData = new HashMap<String, Map<String, Student>>();
 	
-	private  List<Integer> listOfUDPPorts = new ArrayList<Integer>();
+	private  Map<Integer, String> UDPInfo = new HashMap<Integer, String>();
 	
 	private InetAddress ipAddress;
 	
@@ -92,9 +92,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		this.ipAddress = info.getIpAddress();
 		
 		//Initialize list of UDPPorts
-		this.listOfUDPPorts.add(ConstantValue.COCORDIA_UDP_PORT);
-		this.listOfUDPPorts.add(ConstantValue.MCGILL_UDP_PORT);
-		this.listOfUDPPorts.add(ConstantValue.UDEM_UDP_PORT);
+		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, "132.205.45.213");
+		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, "132.205.45.212");
+		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, "132.205.45.211");
 		
 		
 		initializeTestingData();
@@ -245,17 +245,17 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		} else {
 			
 			//Try to reserver from a remote library
-			for(int port: listOfUDPPorts) {
-				if(port != this.portOfUDP) {
+			for(Map.Entry<Integer, String> info : UDPInfo.entrySet()) {
+				if(info.getKey() != this.portOfUDP) {
 					
 					DatagramSocket socket = null;
 					
 					try {
 						socket = new DatagramSocket();
-						InetAddress host = InetAddress.getByName("localhost");
+						InetAddress host = InetAddress.getByName(info.getValue());
 						
 						byte[] udpMessage = ("1," + bookName + "," + authorName).getBytes();
-						DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, port);
+						DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, info.getKey());
 						socket.send(sendPacket);
 						
 						byte[] buffer = new byte[1000];
@@ -311,18 +311,18 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		StringBuilder finalResult = new StringBuilder();
 		finalResult.append(checkNonRetuners(numDays) + "\n");
 		
-		for(int port: listOfUDPPorts) {
-			if(port != this.portOfUDP) {
+		for(Map.Entry<Integer, String> info : UDPInfo.entrySet()) {
+			if(info.getKey() != this.portOfUDP) {
 				
 				DatagramSocket socket = null;
 				String resultFromOther = "";
 				
 				try {
 					socket = new DatagramSocket();
-					InetAddress host = InetAddress.getByName("localhost");
+					InetAddress host = InetAddress.getByName(info.getValue());
 					
 					byte[] message = ("0," + numDays).getBytes();
-					DatagramPacket sendPacket = new DatagramPacket(message, message.length, host, port);
+					DatagramPacket sendPacket = new DatagramPacket(message, message.length, host, info.getKey());
 					socket.send(sendPacket);
 					
 					byte[] buffer = new byte[1000];
