@@ -707,7 +707,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		}
 		
 		if(this.getNameOfServer().equalsIgnoreCase("McGill")) {
-			Book book = new Book("testbook", "testauthor", 134);
+			Book book = new Book("testbook", "testauthor", Integer.MAX_VALUE);
 			this.getBookshelf().add(book);
 			
 		}

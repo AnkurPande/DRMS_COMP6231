@@ -40,7 +40,14 @@ public class UDPSocket extends Thread {
 					responseMessageString = server.checkNonRetuners(numDays);
 				}
 				else {
-					//reserve request
+					/*
+					 * reserve request
+					 * 
+					 * Prefix Definition
+					 * 1 -- check book availability
+					 * 2 -- release book
+					 * 3 -- confirm remote reservation
+					 */
 					if(requestParts[0].trim().equalsIgnoreCase("1")) {
 						responseMessageString = server.checkBookAvailability(requestParts[1].trim(),requestParts[2].trim())?"true":"false";
 					}
