@@ -132,8 +132,8 @@ public class Demo implements Runnable {
 		bookG[1] = "HHH";
 		
 		String[] bookI = new String[2];
-		bookI[0] = "III";
-		bookI[1] = "JJJ";
+		bookI[0] = "testbook";
+		bookI[1] = "testauthor";
 		
 		Random rnd = new Random();
 		int index = (int) (rnd.nextFloat() * 4);

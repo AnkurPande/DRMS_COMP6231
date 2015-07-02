@@ -58,7 +58,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		//Institution names
 		public static final String CONCORDIA = "Concordia";
+		
 		public static final String MCGILL = "McGill";
+		
 		public static final String UDEM = "UdeM";
 		
 		//Default Duration
@@ -66,7 +68,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		//UDP Ports
 		public static final int COCORDIA_UDP_PORT = 4445;
+		
 		public static final int MCGILL_UDP_PORT = 4447;
+		
 		public static final int UDEM_UDP_PORT = 4449;
 		
 //		public static final String CONCORDIA_IP_ADDRESS = "132.205.45.213";
@@ -74,7 +78,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 //		public static final String UDEM_IP_ADDRESS = "132.205.45.211";
 		
 		public static final String CONCORDIA_IP_ADDRESS = "localhost";
+		
 		public static final String MCGILL_IP_ADDRESS = "localhost";
+		
 		public static final String UDEM_IP_ADDRESS = "localhost";
 		
 	}
@@ -404,12 +410,26 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		}
 	}
 	
+	/**
+	 * Server is alive.
+	 *
+	 * @param username the username
+	 * @param bookName the book name
+	 * @return true, if successful
+	 */
 	public boolean serverIsAlive(String username, String bookName) {
 		
 		currentDelegate.performInterLibraryReservation();
 		return true;
 	}
 	
+	/**
+	 * Update student data from inter library reservation.
+	 *
+	 * @param username the username
+	 * @param bookName the book name
+	 * @param authorName the author name
+	 */
 	public void updateStudentDataFromInterLibraryReservation(String username, String bookName, String authorName) {
 		
 		Student student = this.getStudent(username);
@@ -418,6 +438,13 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 
 	}
 	
+	/**
+	 * Release book.
+	 *
+	 * @param bookName the book name
+	 * @param authorName the author name
+	 * @return true, if successful
+	 */
 	public boolean releaseBook(String bookName, String authorName) {
 		
 		Book book = this.getBook(bookName, authorName);
@@ -433,6 +460,12 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 	}
 	
+	/**
+	 * Confirm remote reservation.
+	 *
+	 * @param bookName the book name
+	 * @param bookAuthor the book author
+	 */
 	public void confirmRemoteReservation(String bookName, String bookAuthor) {
 		
 		log("Remote Library", "Local book reservation confirmed by a remote library. " + "Book name: "+ bookName + " Book author: " + bookAuthor);
@@ -508,7 +541,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 * The main method.
 	 *
 	 * @param args the arguments
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public static void main(String[] args) throws Exception {
 		
@@ -692,10 +725,20 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 	}
 
+	/**
+	 * Gets the ip address.
+	 *
+	 * @return the ip address
+	 */
 	public InetAddress getIpAddress() {
 		return ipAddress;
 	}
 
+	/**
+	 * Sets the ip address.
+	 *
+	 * @param ipAddress the new ip address
+	 */
 	public void setIpAddress(InetAddress ipAddress) {
 		this.ipAddress = ipAddress;
 	}
