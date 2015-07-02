@@ -2,6 +2,7 @@ package server;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 /**
  * @author Ankurp
@@ -22,7 +23,7 @@ public class UDPSocket extends Thread {
 		try {
 			
 			
-			socket = new DatagramSocket(server.getPortOfUDP());
+			socket = new DatagramSocket(server.getPortOfUDP(), InetAddress.getByName(server.getIpAddress()));
 			byte[] buffer = new byte[1000];
 			
 			while(true){

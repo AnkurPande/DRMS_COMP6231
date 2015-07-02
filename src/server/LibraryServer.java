@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,7 +32,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 * Properties of server
 	 */
 	private String nameOfServer;
-	
+
 	private int portOfUDP;
 	
 	private UDPSocket socket;
@@ -44,7 +43,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	
 	private  Map<Integer, String> UDPInfo = new HashMap<Integer, String>();
 	
-	private InetAddress ipAddress;
+	private String ipAddress;
 	
 	private TransactionDelegate currentDelegate;
 	
@@ -73,15 +72,15 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		public static final int UDEM_UDP_PORT = 4449;
 		
-//		public static final String CONCORDIA_IP_ADDRESS = "132.205.45.213";
-//		public static final String MCGILL_IP_ADDRESS = "132.205.45.212";
-//		public static final String UDEM_IP_ADDRESS = "132.205.45.211";
+		public static final String CONCORDIA_IP_ADDRESS = "132.205.94.90";
+		public static final String MCGILL_IP_ADDRESS = "132.205.94.89";
+		public static final String UDEM_IP_ADDRESS = "132.205.94.89";
 		
-		public static final String CONCORDIA_IP_ADDRESS = "localhost";
-		
-		public static final String MCGILL_IP_ADDRESS = "localhost";
-		
-		public static final String UDEM_IP_ADDRESS = "localhost";
+//		public static final String CONCORDIA_IP_ADDRESS = "localhost";
+//		
+//		public static final String MCGILL_IP_ADDRESS = "localhost";
+//		
+//		public static final String UDEM_IP_ADDRESS = "localhost";
 		
 	}
 
@@ -101,6 +100,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		this.nameOfServer = info.getServerName();
 		this.portOfUDP = info.getPortOfUDP();
+		this.ipAddress = info.getIpAddress();
 		
 		//Initialize list of UDPPorts
 		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.CONCORDIA_IP_ADDRESS);
@@ -730,7 +730,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 *
 	 * @return the ip address
 	 */
-	public InetAddress getIpAddress() {
+	public String getIpAddress() {
 		return ipAddress;
 	}
 
@@ -739,7 +739,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 *
 	 * @param ipAddress the new ip address
 	 */
-	public void setIpAddress(InetAddress ipAddress) {
+	public void setIpAddress(String ipAddress) {
 		this.ipAddress = ipAddress;
 	}
 
