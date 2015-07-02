@@ -39,6 +39,7 @@ public class UDPSocket extends Thread {
 					//non return request
 					String numDays = requestParts[1].trim();
 					responseMessageString = server.checkNonRetuners(numDays);
+					System.out.println(responseMessageString);
 				}
 				else {
 					/*
