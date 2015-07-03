@@ -72,15 +72,15 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		public static final int UDEM_UDP_PORT = 4449;
 		
-		public static final String CONCORDIA_IP_ADDRESS = "132.205.94.90";
-		public static final String MCGILL_IP_ADDRESS = "132.205.94.89";
-		public static final String UDEM_IP_ADDRESS = "132.205.94.89";
+//		public static final String CONCORDIA_IP_ADDRESS = "132.205.94.90";
+//		public static final String MCGILL_IP_ADDRESS = "132.205.94.89";
+//		public static final String UDEM_IP_ADDRESS = "132.205.94.89";
 		
-//		public static final String CONCORDIA_IP_ADDRESS = "localhost";
-//		
-//		public static final String MCGILL_IP_ADDRESS = "localhost";
-//		
-//		public static final String UDEM_IP_ADDRESS = "localhost";
+		public static final String CONCORDIA_IP_ADDRESS = "localhost";
+		
+		public static final String MCGILL_IP_ADDRESS = "localhost";
+		
+		public static final String UDEM_IP_ADDRESS = "localhost";
 		
 	}
 
@@ -548,8 +548,8 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		//Initialize library server information
 		List<LibraryServerInfo> serverInfoList = new ArrayList<LibraryServerInfo>();
 		serverInfoList.add(new LibraryServerInfo(ConstantValue.CONCORDIA, ConstantValue.COCORDIA_UDP_PORT,ConstantValue.CONCORDIA_IP_ADDRESS));
-//		serverInfoList.add(new LibraryServerInfo(ConstantValue.MCGILL, ConstantValue.MCGILL_UDP_PORT,ConstantValue.MCGILL_IP_ADDRESS));
-//		serverInfoList.add(new LibraryServerInfo(ConstantValue.UDEM, ConstantValue.UDEM_UDP_PORT,ConstantValue.UDEM_IP_ADDRESS));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.MCGILL, ConstantValue.MCGILL_UDP_PORT,ConstantValue.MCGILL_IP_ADDRESS));
+		serverInfoList.add(new LibraryServerInfo(ConstantValue.UDEM, ConstantValue.UDEM_UDP_PORT,ConstantValue.UDEM_IP_ADDRESS));
 		
 		//CORBA
 		try {
