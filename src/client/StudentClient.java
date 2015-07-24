@@ -133,15 +133,21 @@ public class StudentClient
 	 * This function keeps a record of all the activities of a Student
 	 * @param fileName, logInfo
 	 */
-   public void logFile(String fileName, String logInfo) throws IOException {
-   	
-   	 File clientFile = new File("clientLog",fileName); 
-   	 if(!clientFile.exists()) clientFile.createNewFile();
-   	
-   	 myWriter = new FileWriter(clientFile,true);
-   	 myWriter.write(logInfo+"\n");
-   	 myWriter.flush();
-   	 myWriter.close();
+   public void logFile(String fileName, String logInfo) {
+   	 try {
+   		 
+   		File clientFile = new File("clientLog",fileName); 
+      	 if(!clientFile.exists()) clientFile.createNewFile();
+      	
+      	 myWriter = new FileWriter(clientFile,true);
+      	 myWriter.write(logInfo+"\n");
+      	 myWriter.flush();
+      	 myWriter.close();
+      	 
+   	 } catch (IOException e) {
+   		 e.printStackTrace();
+   	 }
+   	 
    }
    
    /**
@@ -207,7 +213,7 @@ public class StudentClient
 	 * <p>This Function create an account for a student on the Library server
 	 *    of the institution where the student is registered</p>
 	 */
-   public boolean createAccount(boolean test) throws Exception {
+   public boolean createAccount(boolean test) {
      
           String fname, lname,email,phone;
           
@@ -283,7 +289,15 @@ public class StudentClient
         }
    }
    
-   /**
+   public Student getStudent() {
+	return student;
+}
+
+public void setStudent(Student student) {
+	this.student = student;
+}
+
+/**
 	 * <h1></h1>
 	 * <p>This Function reserve a book for a registered student</p>
 	 */
