@@ -153,9 +153,7 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			
 			Student student = new Student(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);
 			this.addStudent(student);
-			
-			System.out.println(this.nameOfServer + " server create a new account: " + username);
-			
+						
 			log(username, "Create a new account.");
 			
 			return ConstantValue.TRUE;
@@ -219,7 +217,6 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 			log(username, "Reserve a book. " + "Book name: "+ bookName + " Book author: " + authorName);
 		
 			message = "Reserve success.";
-			System.out.println(this.nameOfServer + ": " +message);
 			return ConstantValue.TRUE;
 		}
 	}
@@ -345,6 +342,8 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 				if(student.getBooks().containsKey(bookName)){
 					student.getBooks().put(bookName, numOfDays);
 					
+					log(username, "set duration " +bookName + " " + student.getBooks().get(bookName)+ " "  + numOfDays + " days.");
+
 					System.out.println(this.nameOfServer + " set duration: " +bookName + " " + student.getBooks().get(bookName));
 					return ConstantValue.TRUE;
 				}
@@ -563,7 +562,9 @@ public class LibraryServer implements LibraryServerInterface, Runnable {
 		try{
 			File f = new File(this.nameOfServer+"_log.txt");
 			FileWriter fw = new FileWriter(f,true);
-			fw.write(new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) +" " +  username+": "+activity);
+			String logString = new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) +" " +  username+": "+activity;
+			System.out.println("[" + this.getNameOfServer() + "]: " + logString);
+			fw.write(logString);
 			fw.write("\r\n");
 			fw.flush();
 			fw.close();
