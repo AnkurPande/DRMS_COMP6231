@@ -1,0 +1,7 @@
+[ 2015/07/24 02:01:23] Account created for user: aaabbbccc on server: Concordia
+[ 2015/07/24 02:02:02] Account created for user: aaabbbccc on server: McGill
+[ 2015/07/24 02:02:15] Account created for user: aaabbbccc on server: UdeM
+[ 2015/07/24 02:02:28] Book: AAA, Reserved for user: aaabbbccc on server: Concordia
+[ 2015/07/24 02:02:53] Book: AAA, Reserved for user: aaabbbccc on server: McGill
+[ 2015/07/24 02:03:03] Book: AAA, Reserved for user: aaabbbccc on server: UdeM
+[ 2015/07/24 02:03:25] Book: aaabb, Reserved for user: aaabbbccc on server: Concordia

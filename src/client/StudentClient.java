@@ -1,22 +1,18 @@
 package client;
 
-import models.*;
-import server.*;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Date;
-import java.text.SimpleDateFormat;
 import java.util.Scanner;
-import java.net.MalformedURLException;
-import org.omg.CORBA.ORB;
-import org.omg.CORBA.Object;
-import corbaLibrary.CorbaLibraryServer;
-import corbaLibrary.CorbaLibraryServerHelper;
-import corbaLibrary.CorbaLibraryServerOperations;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.io.File;
+import model.*;
+
+
 
 /**
  * <h1>Student Client</h1>
@@ -32,12 +28,13 @@ public class StudentClient
 {
    private Scanner scan;
    private Student student;
-   private CorbaLibraryServer server;
    private FileWriter myWriter;
    private File clientLogFolder;
-   private ORB orb;
-   private BufferedReader reader;
-   private org.omg.CORBA.Object corbaObject;
+   private Client client;
+   private String serverLocation;
+   private WebResource resource;
+   
+  
    
    private static StudentClient aStudent = null;
    
@@ -46,28 +43,20 @@ public class StudentClient
 	 * @param institution
 	 * 		String Variable for Educational Institution
 	 */
-   public StudentClient(String institution, ORB orb) 
+   public StudentClient(String institution) 
    {
           scan = new Scanner(System.in);
           student = new Student();
-          this.orb = orb;
-      
+          serverLocation = findServer(institution); 
+          
           try {
-          	reader = new BufferedReader(new FileReader(findServer(institution)));
-          	String ior = reader.readLine();
-          	reader.close();
-          	corbaObject = orb.string_to_object(ior);
-          	
-          	server = CorbaLibraryServerHelper.narrow(corbaObject);
-          	
-	        //server = (LibraryServerInterface) Naming.lookup("rmi://localhost:"+ findServer(institution));
-	  } catch (MalformedURLException e) {
+        	  
+        	  client = Client.create(); 
+        	  
+	  } catch (Exception e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
-	  } catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
+	  } 
 	  
           student.setEducationalIns(institution);
           clientLogFolder = new File("clientLog");
@@ -87,11 +76,11 @@ public class StudentClient
 	String s = edu;
 	String server;
 	if (s.equals("Concordia"))
-		server = "ior/ior_Concordia.txt";
+		server = "localhost:8080/RestTestApp/library/library-service-concordia";
 	else if (s.equals("McGill"))
-		server = "ior/ior_McGill.txt";
+		server = "localhost:8080/RestTestApp/library/library-service-mcgill";
 	else if (s.equals("UdeM"))
-		server = "ior/ior_UdeM.txt";
+		server = "localhost:8080/RestTestApp/library/library-service-udem";
 	else{
 		server = "server is not found";
 	}
@@ -103,7 +92,7 @@ public class StudentClient
    
    /**
 	 * <h1></h1>
-	 * <p>This Function collects the username and password of theuser
+	 * <p>This Function collects the user name and password of the user
 	 *     and checks if the meet the requirements</p>
 	 */
    public boolean validateCredentials()
@@ -218,7 +207,7 @@ public class StudentClient
 	 * <p>This Function create an account for a student on the Library server
 	 *    of the institution where the student is registered</p>
 	 */
-   public boolean createAccount(boolean test) throws IOException {
+   public boolean createAccount(boolean test) throws Exception {
      
           String fname, lname,email,phone;
           
@@ -261,10 +250,18 @@ public class StudentClient
       
          //calls the remote method on the server to actually create the account
          
+         resource = client.resource("http://" + serverLocation +"/create-account/"+ 
+                                     student.getFirstName() +"-"+ student.getLastName() + "-" + student.getEmailAddress() + "-"+
+        		                     student.getPhoneNumber() + "-"+ student.getUserName() + "-"+ student.getPassword() + "-"+ 
+                                     student.getEducationalIns());
+         
+         ClientResponse response = resource.accept("text/plain").get(ClientResponse.class);
+         
       
-         if(server.createAccount(student.getFirstName(), student.getLastName(), student.getEmailAddress(), student.getPhoneNumber(), student.getUserName(), student.getPassword(), student.getEducationalIns())) 
+         if(response.getStatus() == 200) 
          {
               System.out.println("Account Created Successfully!!!");
+              System.out.println(response.getEntity(String.class));
               
               if (test){
     			  System.out.println("from Server: " + student.getEducationalIns());
@@ -281,6 +278,7 @@ public class StudentClient
          }
          else {
                 //TODO get an error message from the server
+        	    if(!test) showMenu();
                 return false;
         }
    }
@@ -289,30 +287,33 @@ public class StudentClient
 	 * <h1></h1>
 	 * <p>This Function reserve a book for a registered student</p>
 	 */
-   public boolean reserveBook(boolean test) throws IOException {
+   public boolean reserveBook(boolean test) throws Exception {
 	  
-	  Book aBook = selectBook();
-	  
-	  if(server.reserveBook(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getBookAuthor())) {
-		  System.out.println("Reserve Success");
+	   Book aBook = selectBook();
 		  
-		  if (test){
-			  System.out.println("from Server: " + student.getEducationalIns());
-			  System.out.println();
+		  resource = client.resource("http://" + serverLocation +"/reserve-book/"+ student.getUserName() +"-"+ student.getPassword() + "-" + aBook.getBookName() + "-"+ aBook.getBookName());
+	      ClientResponse response = resource.accept("text/plain").get(ClientResponse.class);
+		  
+		  if(response.getStatus() == 200) {
+			  System.out.println("Reserve Success");
+			  
+			  if (test){
+				  System.out.println("from Server: " + student.getEducationalIns());
+				  System.out.println();
+			  }
+			  
+			  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+	                  + " Book: "+ aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
+	                  + student.getEducationalIns();
+	          logFile(student.getUserName(),logInfo);
+	          if(!test) showMenu();
+	          
+	          return true;
+		  } else {
+			  System.out.println("Reserve Fail");
+			  if(!test) showMenu();
+			  return false;
 		  }
-		  
-		  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                  + " Book: "+aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
-                  + student.getEducationalIns();
-          logFile(student.getUserName(),logInfo);
-          if(!test) showMenu();
-          
-          return true;
-	  } else {
-		  System.out.println("Reserve Fail");
-		  
-		  return false;
-	  }
                      
    }
    
@@ -358,11 +359,14 @@ public class StudentClient
 	 * <h1></h1>
 	 * <p>This Function reserve a book for a registered student</p>
 	 */
-   public boolean reserveInterLibrary(boolean test) throws IOException {
+   public boolean reserveInterLibrary(boolean test) throws Exception {
      
 	  Book aBook = selectBook();
 	  
-	  if(server.reserveInterLibrary(student.getUserName(),student.getPassword(),aBook.getBookName(),aBook.getBookAuthor())) {
+	  resource = client.resource("http://" + serverLocation +"/reserve-book-inter-library/"+ student.getUserName() +"-"+ student.getPassword() + "-" + aBook.getBookName() + "-"+ aBook.getBookName());
+      ClientResponse response = resource.accept("text/plain").get(ClientResponse.class);
+	  
+	  if(response.getStatus() == 200) {
 		  System.out.println("Reserve Success");
 		  
 		  if (test){
@@ -379,7 +383,7 @@ public class StudentClient
           return true;
 	  } else {
 		  System.out.println("Reserve Fail");
-		  
+		  if(!test) showMenu();
 		  return false;
 	  }
                      
@@ -388,11 +392,14 @@ public class StudentClient
    /**
 	 * <h1></h1>
 	 * <p>This is Where the execution of the program starts</p>
+ * @throws Exception 
 	 */
-   public static void main(String args[]) {
+   public static void main(String args[]) throws Exception {
+	   
+	   aStudent = new StudentClient("Concordia");
    	
 	 // System.setSecurityManager(new RMISecurityManager());
-          System.out.println("WELCOME TO ONLINE LIBRARY SYSTEM");
+         System.out.println("WELCOME TO ONLINE LIBRARY SYSTEM");
           System.out.println();
           System.out.println("Select your instution:");
           System.out.println();
@@ -400,34 +407,34 @@ public class StudentClient
           System.out.println("2- McGill");
           System.out.println("3- UdeM");
       
-          int choice = 0;
-          boolean valid = false;
+         int choice = 0;
+         boolean valid = false;
           
-         // @SuppressWarnings("resource")
-	  Scanner scan = new Scanner(System.in);
+         @SuppressWarnings("resource")
+	    Scanner scan1 = new Scanner(System.in);
 	  
-	  ORB orb = ORB.init(args,null);
+	  
       
           while (!valid) {
           	
                            try {
 
-                                  choice = scan.nextInt();
+                                  choice = scan1.nextInt();
                                   
                                   switch (choice) {
              
                                                      case 1:
-                                                           aStudent = new StudentClient("Concordia",orb);
+                                                           aStudent = new StudentClient("Concordia");
                                                            valid = true;
                                                            break;
                   
                                                      case 2:
-                                                           aStudent = new StudentClient("McGill",orb);
+                                                           aStudent = new StudentClient("McGill");
                                                            valid = true;
                                                            break;
                   
                                                      case 3:
-                                                           aStudent = new StudentClient("UdeM",orb);
+                                                           aStudent = new StudentClient("UdeM");
                                                            valid = true;
                                                            break;
                   
@@ -441,7 +448,7 @@ public class StudentClient
                                                       valid = false;
                                 	
                                 }
-                        }
+                       }
       
         aStudent.showMenu();
        
@@ -449,13 +456,13 @@ public class StudentClient
    
    public void demoCreateAccount(String firstName, String lastName, String emailAddress,
 			String phoneNumber, String username, String password, String eduInstitution) {
-	  server.createAccount(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);
+	   resource = client.resource("http://" + serverLocation + "/DRMS_COMP6231_TEAM10/crunchify/createAccount/"+ firstName +"/"+ lastName + "/" + emailAddress + "/"+ phoneNumber + "/"+ username + "/"+ password + "/"+ eduInstitution);
    }
    
    public void demoReserveBook(String username, String password, String bookName, String authorName) {
 	   
 	   try {
-		   server.reserveBook(username, password, bookName, authorName);
+		   resource = client.resource("http://" + serverLocation + "/DRMS_COMP6231_TEAM10/crunchify/reserveBook/"+ username +"/"+ password + "/" + bookName + "/"+ authorName);
 
 	   }catch (Exception e) {
 		   System.out.println(e.getMessage());
@@ -465,7 +472,15 @@ public class StudentClient
    
    public void demoReserveInterLibrary(String username, String password, String bookName, String authorName) {
 	   
-	   server.reserveInterLibrary(username, password, bookName, authorName);
+	   try {
+		   resource = client.resource("http://" + serverLocation + "/DRMS_COMP6231_TEAM10/crunchify/reserveInterLibrary/"+ username +"/"+ password + "/" + bookName + "/"+ authorName);
+
+	   }catch (Exception e) {
+		   System.out.println(e.getMessage());
+	   }
 	   
    }
+   
+   
+   
 }

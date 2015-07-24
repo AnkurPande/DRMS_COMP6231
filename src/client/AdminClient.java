@@ -1,18 +1,13 @@
 package client;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
-import org.omg.CORBA.ORB;
-import corbaLibrary.CorbaLibraryServer;
-import corbaLibrary.CorbaLibraryServerHelper;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 
 /**
  * @author Ankurp
@@ -21,13 +16,15 @@ import corbaLibrary.CorbaLibraryServerHelper;
 public class AdminClient {
 	 
 	private Scanner scan;
-	private CorbaLibraryServer server;
+	
 	private FileWriter myWriter;
 	private File clientLogFolder;
-	private org.omg.CORBA.Object corbaObject;
 	private String instituteName =null;
 	private static AdminClient admin;
 	private String userName , password, bookName,numOfDays;
+	private Client client;
+	private WebResource resource;
+
 	
 	/**
 	 * @param institution
@@ -35,21 +32,18 @@ public class AdminClient {
 	 * @throws IOException
 	 * Initialize the servers.
 	 */
-	public AdminClient(String institution, ORB orb) throws IOException{
+	public AdminClient(String institution) throws Exception{
+		
 		scan = new Scanner(System.in);
+		
 		try {
-        	BufferedReader reader = new BufferedReader(new FileReader(getServer(institution)));
-        	String ior = reader.readLine();
-        	reader.close();
-        	corbaObject = orb.string_to_object(ior);
-        	server = CorbaLibraryServerHelper.narrow(corbaObject);
-      } catch (MalformedURLException e) {
+		  
+			client = Client.create();
+        	
+      } catch (Exception e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
-	  } catch (RemoteException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	  }
+	  } 
 	  
         this.instituteName = institution;
         clientLogFolder = new File("clientLog");
@@ -73,7 +67,7 @@ public class AdminClient {
         	try {
         		choice = scan.nextInt();
         		switch (choice) {
-        		case 1:	admin.getNonReturners();
+        		case 1:	admin.getNonReturners(true);
         				valid = true;	break;
         		case 2:	admin.setDuration();
         				valid = true;   break;
@@ -96,8 +90,8 @@ public class AdminClient {
 	 * @throws IOException
 	 * The list of non returner students is displayed .
 	 */
-	public void getNonReturners() throws IOException{
-		String result;
+	public boolean getNonReturners(boolean test) throws IOException{
+		
 		System.out.println("Enter Username: ");
 		this.userName =scan.next();
         System.out.println("Enter Password: ");
@@ -105,21 +99,37 @@ public class AdminClient {
         System.out.println("Enter No Of Days: ");
         this.numOfDays = scan.next();
         
+        resource = client.resource("http://" + getServer(instituteName) + "/get-non-returners/"+ this.userName +"-"+ this.password + "-" + this.instituteName + "-"+ this.numOfDays);
+        ClientResponse response = resource.accept("text/plain").get(ClientResponse.class);
         
-        result =server.getNonRetuners(this.userName, this.password, this.instituteName, this.numOfDays);
+     
+        if(response.getStatus() == 200){
+        	
+        	System.out.println(response.getEntity(String.class));
+       
+        	String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+            		+ "Non Returners : Success";
+            setLogger(logInfo, this.userName);
+            if (test) admin.showMenu();       
+            return true;
+        	
+        }
+        else{
+        	
+        	String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+            		+ "Non Returners : Failed";
+            setLogger(logInfo, this.userName);
+        }
         
-        System.out.println(result);
-        String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                		+ "Non Returners : " +result;
-        setLogger(logInfo, this.userName);
         admin.showMenu();
+        return false;
 	}
 	
 	/**
 	 * @throws IOException
 	 * This method is used to set duration for the books in the library.
 	 */
-	public void setDuration() throws IOException{
+	public boolean setDuration() throws Exception{
 		System.out.println("Enter Username: ");
 		this.userName =scan.next();
         System.out.println("Enter Book Name: ");
@@ -127,36 +137,44 @@ public class AdminClient {
         System.out.println("Enter No Of Days: ");
         this.numOfDays = scan.next();
         
-        if(server.setDuration(userName, bookName,Integer.parseInt(numOfDays))){
+        resource = client.resource("http://" + getServer(instituteName) + "/set-duration/"+ userName +"-"+ bookName + "-" + Integer.parseInt(numOfDays));
+        ClientResponse response = resource.accept("text/plain").get(ClientResponse.class);
+        
+     
+        if(response.getStatus() == 200){
         	System.out.println("Duration set successfully!!!");
             String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
                               + " Duration set successfully for : " + this.bookName + " on server: "
                               + this.instituteName;
             setLogger(logInfo, this.userName);
+            
+            return true;
         }
         else {
         	System.out.println("Duration set unsuccessfull!!!");        	
         }
         admin.showMenu();
+        return false;
 	}
 	
 	/**
 	 * @param institute
 	 * @return library server instance
 	 */
-	public String getServer(String institute){
+	public String getServer(String edu){
 
-		String instituteName = institute;
+		String s = edu;
 		String server;
-		if (instituteName.equals("Concordia"))
-			server = "ior/ior_Concordia.txt";
-		else if (instituteName.equals("McGill"))
-			server = "ior/ior_McGill.txt";
-		else if (instituteName.equals("UdeM"))
-			server = "ior/ior_UdeM.txt";
+		if (s.equals("Concordia"))
+			server = "localhost:8080/RestTestApp/library/library-service-concordia";
+		else if (s.equals("McGill"))
+			server = "localhost:8080/RestTestApp/library/library-service-mcgill";
+		else if (s.equals("UdeM"))
+			server = "localhost:8080/RestTestApp/library/library-service-udem";
 		else{
 			server = "server is not found";
 		}
+			
 		return server;
 	}
 	
@@ -195,17 +213,16 @@ public class AdminClient {
         System.out.println("\n Enter Your Choice: " );
 		
         admin = null;
-        ORB orb = ORB.init(args,null);
     
         while (!valid) {
         	try{
         		choice = scan.nextInt();
         		switch (choice) {
-        		case 1:	admin  = new AdminClient("Concordia",orb);
+        		case 1:	admin  = new AdminClient("Concordia");
                        	valid = true; break;
-                case 2: admin  = new AdminClient("McGill",orb);
+                case 2: admin  = new AdminClient("McGill");
                        	valid = true; break;
-                case 3:	admin  = new AdminClient("UdeM",orb);
+                case 3:	admin  = new AdminClient("UdeM");
                        	valid = true; break;
                 case 4: System.out.println("Exited"); 
 						System.exit(1); break;       
@@ -220,5 +237,6 @@ public class AdminClient {
         }
         admin.showMenu();
 	}
+	
 
 }

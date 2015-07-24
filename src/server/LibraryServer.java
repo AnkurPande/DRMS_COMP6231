@@ -3,7 +3,6 @@ package server;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,22 +10,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import models.Book;
-import models.LibraryServerInfo;
-import models.Student;
+import model.Book;
+import model.Student;
+import model.LibraryServerInfo;
 
-import org.omg.CORBA.ORB;
-import org.omg.PortableServer.POA;
-import org.omg.PortableServer.POAHelper;
-
-import corbaLibrary.CorbaLibraryServerPOA;
 
 /**
  * The Class LibraryServer.
  *
  * @author Haiyang Sun
  */
-public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
+
+
+public class LibraryServer implements LibraryServerInterface, Runnable {
 	
 	/*
 	 * Properties of server
@@ -55,6 +51,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 */
 	public class ConstantValue {
 		
+		
 		//Institution names
 		public static final String CONCORDIA = "Concordia";
 		
@@ -82,6 +79,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 		public static final String UDEM_IP_ADDRESS = "localhost";
 		
+		public static final String TRUE = "true";
+		
+		public static final String FALSE = "false";
 	}
 
 
@@ -95,7 +95,6 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 *
 	 * @param info the info
 	 */
-	
 	public LibraryServer(LibraryServerInfo info) {
 		
 		this.nameOfServer = info.getServerName();
@@ -122,9 +121,18 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	}
 	
 	/**
-	 * Default constructor.
+	 * Default Constuctor
 	 */
-	public LibraryServer() {}
+	public LibraryServer() {
+			
+		//Initialize list of UDPPorts
+		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.CONCORDIA_IP_ADDRESS);
+		this.UDPInfo.put(ConstantValue.MCGILL_UDP_PORT, ConstantValue.MCGILL_IP_ADDRESS);
+		this.UDPInfo.put(ConstantValue.UDEM_UDP_PORT, ConstantValue.UDEM_IP_ADDRESS);
+		
+	}
+	
+	
 
 	/**
 	 * Method that create accounts at local database.
@@ -139,9 +147,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 * @return a boolean indicate success or not
 	 */
 	@Override
-	public boolean createAccount(String firstName, String lastName,
-			String emailAddress, String phoneNumber, String username,
-			String password, String eduInstitution) {
+	public String createAccount(String firstName, String lastName, String emailAddress, String phoneNumber, String username, String password, String eduInstitution) {
 				
 		if(this.getStudent(username) == null) {
 			
@@ -152,9 +158,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			
 			log(username, "Create a new account.");
 			
-			return true;
+			return ConstantValue.TRUE;
 		}
-		return false;
+		return ConstantValue.FALSE;
 	}
 
 	/**
@@ -168,8 +174,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 * @see corbaLibrary.CorbaLibraryServerOperations#reserveBook(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public boolean reserveBook(String username, String password,
-			String bookName, String authorName)  {
+	public String reserveBook(String username, String password, String bookName,String authorName)  {
 		
 		String message = null;
 		
@@ -177,33 +182,34 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		Student student = this.getStudent(username);
 		if (student == null) {
 			message = "Student Client is NOT existed.";
-			System.out.println(message);
-			return false;
+			System.out.println(this.nameOfServer + ": " + message);
+			return ConstantValue.FALSE;
 		}
 		
 		//Check student password
 		if (!student.getPassword().equals(password)) {
 			message = "Wrong Password.";
-			System.out.println(message);
-			return false;
+			System.out.println(this.nameOfServer + ": " +message);
+			return ConstantValue.FALSE;
 		}
 		
 		//Check book exist or not
 		Book book = this.getBook(bookName, authorName);
 		if (book == null){
 			message = "Book is NOT existed.";
-			System.out.println(message);
-			return false;
+			System.out.println(this.nameOfServer + ": " +message);
+			return ConstantValue.FALSE;
 		}
 		
 		synchronized (book) {
 			
 			//Check book availability
-			if (book.getNumberCopies() <= 0) {
+			if (book.getNumberCopies() - book.getNumberOfCopiesIsHolding() <= 0) {
 				message = "No copies available.";
-				System.out.println(message);
-				return false;
+				System.out.println(this.nameOfServer + ": " +message);
+				return ConstantValue.FALSE;
 			}
+			
 			
 			//Reserver the book
 			student.getBooks().put(bookName, ConstantValue.DEFAULT_DURATION);
@@ -213,8 +219,8 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 			log(username, "Reserve a book. " + "Book name: "+ bookName + " Book author: " + authorName);
 		
 			message = "Reserve success.";
-			System.out.println(message);
-			return true;
+			System.out.println(this.nameOfServer + ": " +message);
+			return ConstantValue.TRUE;
 		}
 	}
 	
@@ -229,7 +235,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 * @see corbaLibrary.CorbaLibraryServerOperations#reserveInterLibrary(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public boolean reserveInterLibrary(String username, String password, String bookName, String authorName) {
+	public String reserveInterLibrary(String username, String password, String bookName, String authorName) {
 		
 
 		String message = null;
@@ -239,20 +245,20 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		//Check student exist or not
 		if (student == null) {
 			message = "Student Client is NOT existed.";
-			System.out.println(message);
-			return false;
+			System.out.println(this.nameOfServer + ": " +message);
+			return ConstantValue.FALSE;
 		}
 		
 		//Check student password
 		if (!student.getPassword().equals(password)) {
 			message = "Wrong Password.";
-			System.out.println(message);
-			return false;
+			System.out.println(this.nameOfServer + ": " +message);
+			return ConstantValue.FALSE;
 		}
 	
 		//Try to reserve at local library
-		if(this.reserveBook(username, password, bookName, authorName)) {
-			return true;
+		if(this.reserveBook(username, password, bookName, authorName).equalsIgnoreCase(ConstantValue.TRUE)) {
+			return ConstantValue.TRUE;
 		} else {
 			
 			//Try to reserver from a remote library
@@ -264,13 +270,13 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 					boolean bookIsReadyToReserve = currentDelegate.bookIsReadyToReserve(username, bookName, authorName);
 					
 					if(bookIsReadyToReserve) {
-						return true;
+						return ConstantValue.TRUE;
 					}
 					
 				}
 			}
 		}
-		return false;
+		return ConstantValue.FALSE;
 	}
 
 	/**
@@ -283,8 +289,9 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 * @return the non retuners
 	 * @see corbaLibrary.CorbaLibraryServerOperations#getNonRetuners(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
+	
 	@Override
-	public  String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays) {
+	public String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays) {
 		
 		//Check administrator account information
 		if(!adminUsername.equalsIgnoreCase("admin") || !adminPassword.equalsIgnoreCase("admin")) {
@@ -325,26 +332,26 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 * @see corbaLibrary.CorbaLibraryServerOperations#setDuration(java.lang.String, java.lang.String, int)
 	 */
 	@Override
-	public boolean setDuration(String username, String bookName, int numOfDays) {
+	public String setDuration(String username, String bookName, int numOfDays) {
 		
 		Student student = this.getStudent(username);
 		
 		//Check if the student exists
 		if(student == null) {
-			return false;
+			return ConstantValue.FALSE;
 		}
 		synchronized(student) {
 			if (student != null) {
 				if(student.getBooks().containsKey(bookName)){
 					student.getBooks().put(bookName, numOfDays);
 					
-					System.out.println(bookName + " " + student.getBooks().get(bookName));
-					return true;
+					System.out.println(this.nameOfServer + " set duration: " +bookName + " " + student.getBooks().get(bookName));
+					return ConstantValue.TRUE;
 				}
 			}
 		}
 		
-		return false;
+		return ConstantValue.FALSE;
 	}
 	
 	
@@ -395,14 +402,13 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		}
 		
 		synchronized (book) {
-			if (book.getNumberCopies() <= 0) {
-				System.out.println("no copies book");
+			if (book.getNumberCopies() - book.getNumberOfCopiesIsHolding() <= 0) {
+				System.out.println(this.nameOfServer + " check book availability: " +"no copies book");
 
 				return false;
 			}
 			
-			book.setNumberCopies(book.getNumberCopies() -1);
-			
+			book.setNumberOfCopiesIsHolding(book.getNumberOfCopiesIsHolding() + 1);
 			
 			log("Remote Library", "Local book pre-reserved by a remote library. " + "Book name: "+ bookName + " Book author: " + authorName);
 
@@ -451,7 +457,7 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 
 		synchronized(book) {
 			
-			book.setNumberCopies(book.getNumberCopies() + 1);
+			book.setNumberOfCopiesIsHolding(book.getNumberOfCopiesIsHolding()-1);
 		}
 		
 		log("Remote Library", "Pre-reserved book released. " + "Book name: "+ bookName + " Book author: " + authorName);
@@ -467,6 +473,14 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	 * @param bookAuthor the book author
 	 */
 	public void confirmRemoteReservation(String bookName, String bookAuthor) {
+		
+		Book book = this.getBook(bookName, bookAuthor);
+		
+		synchronized(book) {
+			book.setNumberOfCopiesIsHolding(book.getNumberOfCopiesIsHolding()-1);
+			book.setNumberCopies(book.getNumberCopies() -1);
+
+		}
 		
 		log("Remote Library", "Local book reservation confirmed by a remote library. " + "Book name: "+ bookName + " Book author: " + bookAuthor);
 
@@ -526,60 +540,16 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Runnable#run()
-	 */
+	
+
+	//------------Run----------------
+	
 	@Override
 	public void run() {
 		
 		
 		this.socket = new UDPSocket(this);
 		socket.start();	
-	}
-	
-	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
-	 * @throws Exception the exception
-	 */
-	public static void main(String[] args) throws Exception {
-		
-		//Initialize library server information
-		List<LibraryServerInfo> serverInfoList = new ArrayList<LibraryServerInfo>();
-		serverInfoList.add(new LibraryServerInfo(ConstantValue.CONCORDIA, ConstantValue.COCORDIA_UDP_PORT,ConstantValue.CONCORDIA_IP_ADDRESS));
-		serverInfoList.add(new LibraryServerInfo(ConstantValue.MCGILL, ConstantValue.MCGILL_UDP_PORT,ConstantValue.MCGILL_IP_ADDRESS));
-		serverInfoList.add(new LibraryServerInfo(ConstantValue.UDEM, ConstantValue.UDEM_UDP_PORT,ConstantValue.UDEM_IP_ADDRESS));
-		
-		//CORBA
-		try {
-		
-			ORB orb = ORB.init(args, null);
-			POA rootPOA = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
-		
-			for(LibraryServerInfo info : serverInfoList) {
-			
-				LibraryServer currentServer = new LibraryServer(info);
-				new Thread(currentServer).start();
-			
-				byte[] id = rootPOA.activate_object(currentServer);
-				org.omg.CORBA.Object ref = rootPOA.id_to_reference(id);
-				String ior = orb.object_to_string(ref);
-				PrintWriter fw = new PrintWriter("ior/ior_"+ currentServer.getNameOfServer() + ".txt");
-				fw.println(ior);
-				fw.flush();
-				fw.close();
-				System.out.println(currentServer.nameOfServer + " Server is running!");	
-			
-			}
-
-			rootPOA.the_POAManager().activate();
-			orb.run();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		
 	}
 	
 	//------------Log----------------
@@ -678,8 +648,27 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 	public void setBookshelf(List<Book> bookshelf) {
 		this.bookshelf = bookshelf;
 	}
+	
+	/**
+	 * Gets the ip address.
+	 *
+	 * @return the ip address
+	 */
+	public String getIpAddress() {
+		return ipAddress;
+	}
 
 	/**
+	 * Sets the ip address.
+	 *
+	 * @param ipAddress the new ip address
+	 */
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+
+	/*
 	 * Initialize testing data.
 	 */
 	public void initializeTestingData() {
@@ -725,26 +714,5 @@ public class LibraryServer extends CorbaLibraryServerPOA implements Runnable {
 		
 	}
 
-	/**
-	 * Gets the ip address.
-	 *
-	 * @return the ip address
-	 */
-	public String getIpAddress() {
-		return ipAddress;
-	}
 
-	/**
-	 * Sets the ip address.
-	 *
-	 * @param ipAddress the new ip address
-	 */
-	public void setIpAddress(String ipAddress) {
-		this.ipAddress = ipAddress;
-	}
-
-	
-	
-
-	
 }

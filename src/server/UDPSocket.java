@@ -39,7 +39,6 @@ public class UDPSocket extends Thread {
 					//non return request
 					String numDays = requestParts[1].trim();
 					responseMessageString = server.checkNonRetuners(numDays);
-					System.out.println(responseMessageString);
 				}
 				else {
 					/*
@@ -56,9 +55,12 @@ public class UDPSocket extends Thread {
 					if(requestParts[0].trim().equalsIgnoreCase("2")) {
 						server.releaseBook(requestParts[1].trim(),requestParts[2]);
 						responseMessageString = "true";
+
 					}
 					if(requestParts[0].trim().equalsIgnoreCase("3")) {
-						server.confirmRemoteReservation(requestParts[1].trim(),requestParts[2]);
+
+						server.confirmRemoteReservation(requestParts[1].trim(),requestParts[2].trim());
+						responseMessageString = "true";
 					}
 					
 				}
@@ -71,7 +73,7 @@ public class UDPSocket extends Thread {
 			
 			
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println("UDP Exception");
 		} finally {
 			if (socket != null) socket.close();
 		}

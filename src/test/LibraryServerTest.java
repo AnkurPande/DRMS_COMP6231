@@ -1,13 +1,10 @@
-/**
- * 
- */
 package test;
 
 import static org.junit.Assert.*;
 
-import models.Book;
-import models.LibraryServerInfo;
-import models.Student;
+import model.Book;
+import model.LibraryServerInfo;
+import model.Student;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -76,14 +73,14 @@ public class LibraryServerTest {
 	public void testCreateAccount() {
 		
 		//Try to create a user, should success
-		boolean result1 = serverOfConcordia.createAccount("FirstName", "LastName", "email@address.com", 
+		String result1 = serverOfConcordia.createAccount("FirstName", "LastName", "email@address.com", 
 				"51414141414", "username", "password", "Concordia");
-		assertTrue(result1);
+		assertEquals("true", result1);
 		
 		//Try to create a user with same information as last one, should fail
-		boolean result2 = serverOfConcordia.createAccount("FirstName", "LastName", "email@address.com", 
+		String result2 = serverOfConcordia.createAccount("FirstName", "LastName", "email@address.com", 
 				"51414141414", "username", "password", "Concordia");
-		assertFalse(result2);
+		assertEquals("false", result2);
 		
 	}
 	
@@ -91,12 +88,12 @@ public class LibraryServerTest {
 	public void testReserveBook() {
 		
 		//Try to reserve the book that already set up, should success
-		boolean result1 = serverOfConcordia.reserveBook("TestUser", "TestPassword", "TestBook", "TestAuthor");
-		assertEquals(true, result1);
+		String result1 = serverOfConcordia.reserveBook("TestUser", "TestPassword", "TestBook", "TestAuthor");
+		assertEquals("true", result1);
 		
 		//Try another student to reserve again, no copy available, should fail
-		boolean result2 = serverOfConcordia.reserveBook("TestUser2", "TestPassword2", "TestBook", "TestAuthor");
-		assertFalse(result2);
+		String result2 = serverOfConcordia.reserveBook("TestUser2", "TestPassword2", "TestBook", "TestAuthor");
+		assertEquals("false", result2);
 		
 		//Check if the number of copies reduced
 		int number = serverOfConcordia.getBook("TestBook", "TestAuthor").getNumberCopies();
@@ -114,12 +111,12 @@ public class LibraryServerTest {
 	public void testReserveInterLibrary() {
 		
 		//Reserver a book available at McGill Library from Concordia Server, should success
-		boolean result = serverOfConcordia.reserveInterLibrary("TestUser", "TestPassword", "TestReserveInterLib", "TestAuthor");
-		assertTrue(result);
+		String result = serverOfConcordia.reserveInterLibrary("TestUser", "TestPassword", "TestReserveInterLib", "TestAuthor");
+		assertEquals("true", result);
 		
 		//Reserve again by another user, should fail, cause only one copy available
-		boolean result2 = serverOfConcordia.reserveInterLibrary("TestUser2", "TestPassword2", "TestReserveInterLib", "TestAuthor");
-		assertFalse(result2);		
+		String result2 = serverOfConcordia.reserveInterLibrary("TestUser2", "TestPassword2", "TestReserveInterLib", "TestAuthor");
+		assertEquals("false", result2);		
 	}
 	
 	@Test 

@@ -1,0 +1,33 @@
+ 2015/07/22 23:51:23 username: Create a new account.
+ 2015/07/22 23:51:23 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/22 23:51:23 TestUser: Reserve a book from remote library. Book name: TestReserveInterLib Book author: TestAuthor
+ 2015/07/23 01:22:46 username: Create a new account.
+ 2015/07/23 01:22:46 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/23 01:22:46 admin: Get non Returners for 15days.
+ 2015/07/23 01:22:46 TestUser: Reserve a book. Book name: TestBook Book author: TestAuthor
+ 2015/07/23 01:27:58 username: Create a new account.
+ 2015/07/23 01:27:58 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/23 01:27:58 TestUser: Reserve a book from remote library. Book name: TestReserveInterLib Book author: TestAuthor
+ 2015/07/23 01:29:17 username: Create a new account.
+ 2015/07/23 01:29:17 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/23 01:29:17 TestUser: Reserve a book from remote library. Book name: TestReserveInterLib Book author: TestAuthor
+ 2015/07/23 01:29:48 username: Create a new account.
+ 2015/07/23 01:29:48 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/23 01:29:48 TestUser: Reserve a book from remote library. Book name: TestReserveInterLib Book author: TestAuthor
+ 2015/07/23 01:30:24 username: Create a new account.
+ 2015/07/23 01:30:24 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/23 01:30:24 TestUser: Reserve a book from remote library. Book name: TestReserveInterLib Book author: TestAuthor
+ 2015/07/23 01:30:41 username: Create a new account.
+ 2015/07/23 01:30:41 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/23 01:30:41 TestUser: Reserve a book from remote library. Book name: TestReserveInterLib Book author: TestAuthor
+ 2015/07/23 01:31:53 username: Create a new account.
+ 2015/07/23 01:31:53 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/23 01:31:53 TestUser: Reserve a book from remote library. Book name: TestReserveInterLib Book author: TestAuthor
+ 2015/07/23 01:32:29 username: Create a new account.
+ 2015/07/23 01:32:29 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/23 01:32:29 TestUser: Reserve a book from remote library. Book name: TestReserveInterLib Book author: TestAuthor
+ 2015/07/23 01:32:50 username: Create a new account.
+ 2015/07/23 01:32:50 Remote Library: Local book pre-reserved by a remote library. Book name: TestAvailability Book author: TestAuthor
+ 2015/07/23 01:32:50 TestUser: Reserve a book from remote library. Book name: TestReserveInterLib Book author: TestAuthor
+ 2015/07/23 01:32:50 admin: Get non Returners for 15days.
+ 2015/07/23 01:32:50 TestUser: Reserve a book. Book name: TestBook Book author: TestAuthor
