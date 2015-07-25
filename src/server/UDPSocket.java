@@ -31,7 +31,7 @@ public class UDPSocket extends Thread {
 				socket.receive(requestPacket);
 				
 				byte[] message = requestPacket.getData();
-				String receivedMessageString = new String(message);
+				String receivedMessageString = new String(message).trim();
 				
 				String[] requestParts = receivedMessageString.split(",");
 				
@@ -53,7 +53,7 @@ public class UDPSocket extends Thread {
 						responseMessageString = server.checkBookAvailability(requestParts[1].trim(),requestParts[2].trim())?"true":"false";
 					}
 					if(requestParts[0].trim().equalsIgnoreCase("2")) {
-						server.releaseBook(requestParts[1].trim(),requestParts[2]);
+						server.releaseBook(requestParts[1].trim(),requestParts[2].trim());
 						responseMessageString = "true";
 
 					}

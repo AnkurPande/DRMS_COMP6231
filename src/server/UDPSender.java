@@ -51,7 +51,7 @@ public class UDPSender {
 			
 			String result = new String(receivedPacket.getData());
 			
-			return result;
+			return result.trim();
 			
 		} catch (SocketException e) {
 			System.out.println("Socket: " + e.getMessage());

@@ -7,13 +7,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.omg.CORBA.ORB;
-
 import client.StudentClient;
-import model.Student;
 
 /**
  * The Class Demo.
@@ -26,8 +24,9 @@ public class Demo implements Runnable {
 	private int threadNumber;
 	
 	/** The running time. */
-	private long runningTime;
+	private int runningTime;
 	
+	private long numberOfRPC = 0;
 	/**
 	 * Instantiates a new demo.
 	 *
@@ -36,9 +35,6 @@ public class Demo implements Runnable {
 	public Demo(int i) {
 		setThreadNumber(i);
 	}
-	
-	/** The orb. */
-	ORB orb = ORB.init(new String[1],null);
 	
 	/** The concordia student. */
 	//Initialize three student client
@@ -71,27 +67,38 @@ public class Demo implements Runnable {
 			String usernameUdeM = getRandomString();
 			String passwordUdeM = getRandomString();
 			
-			Student concordiaStudent = new Student(getRandomString(),getRandomString(),getRandomString(),getRandomString(),usernameConcordia, passwordConcordia,"Concordia");
-			Student mcgillStudent = new Student(getRandomString(),getRandomString(),getRandomString(),getRandomString(),usernameMcGill, passwordMcGill,"McGill");
-			Student udemStudent = new Student(getRandomString(),getRandomString(),getRandomString(),getRandomString(),usernameUdeM, passwordUdeM,"UdeM");
-			concordiaStudentClient.setStudent(concordiaStudent);
-			mcgillStudentClient.setStudent(mcgillStudent);
-			udemStudentClient.setStudent(udemStudent);
+			/*
+			 * RPCs, after each call, number of RPC plus one.
+			 */
 			
 			//CreateAccount
-
-			concordiaStudentClient.createAccount(false);
-			mcgillStudentClient.createAccount(false);
-			udemStudentClient.createAccount(false);
+			concordiaStudentClient.demoCreateAccount(getRandomString(), getRandomString(), getRandomString(),getRandomString(),
+					usernameConcordia,passwordConcordia, getRandomString());
+			++ numberOfRPC;
+			
+			mcgillStudentClient.demoCreateAccount(getRandomString(), getRandomString(), getRandomString(),getRandomString(),
+					usernameMcGill,passwordMcGill, getRandomString());
+			++ numberOfRPC;
+			
+			udemStudentClient.demoCreateAccount(getRandomString(), getRandomString(), getRandomString(),getRandomString(),
+					usernameUdeM,passwordUdeM, getRandomString());
+			++ numberOfRPC;
+			
 			//ReserveBook
 			concordiaStudentClient.demoReserveBook(usernameConcordia, passwordConcordia, bookPicker()[0].trim(), bookPicker()[1].trim());
+			++ numberOfRPC;
 			mcgillStudentClient.demoReserveBook(usernameMcGill, passwordMcGill, bookPicker()[0], bookPicker()[1]);
+			++ numberOfRPC;
 			udemStudentClient.demoReserveBook(usernameUdeM, passwordUdeM, bookPicker()[0], bookPicker()[1]);
+			++ numberOfRPC;
 			
 			//ReserveBookInterLibrary
 			concordiaStudentClient.demoReserveInterLibrary(usernameConcordia, passwordConcordia, bookPicker()[0], bookPicker()[1]);
+			++ numberOfRPC;
 			mcgillStudentClient.demoReserveInterLibrary(usernameMcGill, passwordMcGill, bookPicker()[0], bookPicker()[1]);
+			++ numberOfRPC;
 			udemStudentClient.demoReserveInterLibrary(usernameUdeM, passwordUdeM, bookPicker()[0], bookPicker()[1]);
+			++ numberOfRPC;
 			
 			
 		}
@@ -162,7 +169,6 @@ public class Demo implements Runnable {
 	@Override
 	public void run() {
 		//Schedule time to stop.
-		this.setRunningTime(180);
 		Timer timer = new Timer();
 		timer.schedule(new Stop(), runningTime*1000);
 		demo();
@@ -177,6 +183,11 @@ public class Demo implements Runnable {
 	 */
 	public static void main(String[] args) {
 		
+		System.out.println("Please input demo running time (in seconds).");
+		Scanner sc = new Scanner(System.in);
+		int runningDuration = sc.nextInt();
+		sc.close();
+		
 		//Initialize log file
 		try{
 			File f = new File( "demo_log.txt");
@@ -187,7 +198,10 @@ public class Demo implements Runnable {
 		}
 		
 		for(int i=0; i<10; i++) {
-			Thread thread = new Thread(new Demo(i+1));
+			
+			Demo demo = new Demo(i+1);
+			demo.setRunningTime(runningDuration);
+			Thread thread = new Thread(demo);
 			thread.start();
 			String activity = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" Demo Thread " + (i+1) + " Start running!";
 			log(activity);
@@ -226,13 +240,22 @@ public class Demo implements Runnable {
 	}
 
 	
-	public long getRunningTime() {
+	public int getRunningTime() {
 		return runningTime;
 	}
 
-	public void setRunningTime(long runningTime) {
+	public void setRunningTime(int runningTime) {
 		this.runningTime = runningTime;
 	}
+
+	public long getNumberOfRPC() {
+		return numberOfRPC;
+	}
+
+	public void setNumberOfRPC(long numberOfRPC) {
+		this.numberOfRPC = numberOfRPC;
+	}
+
 
 	/**
 	 * Inner-class Stop use to stop running.
@@ -245,7 +268,7 @@ public class Demo implements Runnable {
 			
 			flag = false;
 			String activity = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" Demo Thread " + threadNumber + "  stop!"
-					+ "Running time: " + runningTime + "s!";
+					+ "Running time: " + runningTime + "s! " + "total number of RPCs " + numberOfRPC + "!";
 			System.out.println(activity);
 			log(activity);
 		}

@@ -266,18 +266,25 @@ public class StudentClient
       
          if(response.getStatus() == 200) 
          {
-              System.out.println("Account Created Successfully!!!");
-              System.out.println(response.getEntity(String.class));
+              if(response.getEntity(String.class).equalsIgnoreCase("true")) {
+            	  
+                  System.out.println("Account Created Successfully!!!");
+                  
+                  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+                          + " Account created for user: " + student.getUserName() + " on server: "
+                          + student.getEducationalIns();
+                  
+                  logFile(student.getUserName(),logInfo);
+              } else {
+            	  System.out.println("Create account failed");
+              }
               
               if (test){
     			  System.out.println("from Server: " + student.getEducationalIns());
     			  System.out.println();
     		  }
               
-              String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                                + " Account created for user: " + student.getUserName() + " on server: "
-                                + student.getEducationalIns();
-              logFile(student.getUserName(),logInfo);
+             
               if(!test) showMenu();
               return true;
               
@@ -305,21 +312,30 @@ public void setStudent(Student student) {
 	  
 	   Book aBook = selectBook();
 		  
-		  resource = client.resource("http://" + serverLocation +"/reserve-book/"+ student.getUserName() +"-"+ student.getPassword() + "-" + aBook.getBookName() + "-"+ aBook.getBookName());
+		  resource = client.resource("http://" + serverLocation +"/reserve-book/"+ student.getUserName() +"-"+ student.getPassword() + "-" + aBook.getBookName() + "-"+ aBook.getBookAuthor());
 	      ClientResponse response = resource.accept("text/plain").get(ClientResponse.class);
 		  
 		  if(response.getStatus() == 200) {
-			  System.out.println("Reserve Success");
+			  
+			  if(response.getEntity(String.class).equalsIgnoreCase("true")) {
+            	  
+				  System.out.println("Reserve Success");
+                  
+				  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+		                  + " Book: "+ aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
+		                  + student.getEducationalIns();
+		          logFile(student.getUserName(),logInfo);
+		          
+              } else {
+            	  System.out.println("Reserve book failed");
+              }
 			  
 			  if (test){
 				  System.out.println("from Server: " + student.getEducationalIns());
 				  System.out.println();
 			  }
 			  
-			  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-	                  + " Book: "+ aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
-	                  + student.getEducationalIns();
-	          logFile(student.getUserName(),logInfo);
+			  
 	          if(!test) showMenu();
 	          
 	          return true;
@@ -377,21 +393,35 @@ public void setStudent(Student student) {
      
 	  Book aBook = selectBook();
 	  
-	  resource = client.resource("http://" + serverLocation +"/reserve-book-inter-library/"+ student.getUserName() +"-"+ student.getPassword() + "-" + aBook.getBookName() + "-"+ aBook.getBookName());
+	  resource = client.resource("http://" + serverLocation +"/reserve-book-inter-library/"+ student.getUserName() +"-"+ student.getPassword() + "-" + aBook.getBookName() + "-"+ aBook.getBookAuthor());
       ClientResponse response = resource.accept("text/plain").get(ClientResponse.class);
 	  
 	  if(response.getStatus() == 200) {
-		  System.out.println("Reserve Success");
+		  
+		  if(response.getEntity(String.class).equalsIgnoreCase("true")) {
+        	  
+			  System.out.println("Reserve Success");
+              
+			  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
+	                  + " Book: "+ aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
+	                  + student.getEducationalIns();
+	          logFile(student.getUserName(),logInfo);
+	          
+          } else {
+        	  System.out.println("Reserve book failed");
+          }
 		  
 		  if (test){
 			  System.out.println("from Server: " + student.getEducationalIns());
 			  System.out.println();
 		  }
 		  
-		  String logInfo = "[" + new SimpleDateFormat(" yyyy/MM/dd HH:mm:ss").format(new Date()) + "]"
-                  + " Book: "+ aBook.getBookName()+", Reserved for user: " + student.getUserName() + " on server: "
-                  + student.getEducationalIns();
-          logFile(student.getUserName(),logInfo);
+		  if (test){
+			  System.out.println("from Server: " + student.getEducationalIns());
+			  System.out.println();
+		  }
+		  
+		  
           if(!test) showMenu();
           
           return true;
@@ -458,7 +488,7 @@ public void setStudent(Student student) {
                                                 }
                                 }
                                 catch (Exception e) {
-                                                      System.out.println("Invalid input!!! Please enter an integer");
+                                                      System.out.println("Invalid input!!! Please enter an integer: Exception from main");
                                                       valid = false;
                                 	
                                 }
@@ -470,29 +500,23 @@ public void setStudent(Student student) {
    
    public void demoCreateAccount(String firstName, String lastName, String emailAddress,
 			String phoneNumber, String username, String password, String eduInstitution) {
-	   resource = client.resource("http://" + serverLocation + "/DRMS_COMP6231_TEAM10/crunchify/createAccount/"+ firstName +"/"+ lastName + "/" + emailAddress + "/"+ phoneNumber + "/"+ username + "/"+ password + "/"+ eduInstitution);
+	   
+	   resource = client.resource("http://" + serverLocation +"/create-account/"+ firstName +"-"+ lastName + "-" + emailAddress + "-"+phoneNumber + "-"+ username + "-"+ password + "-"+ eduInstitution);
+	   resource.accept("text/plain").get(ClientResponse.class);
    }
    
    public void demoReserveBook(String username, String password, String bookName, String authorName) {
 	   
-	   try {
-		   resource = client.resource("http://" + serverLocation + "/DRMS_COMP6231_TEAM10/crunchify/reserveBook/"+ username +"/"+ password + "/" + bookName + "/"+ authorName);
+	   resource = client.resource("http://" + serverLocation +"/reserve-book/"+ username +"-"+ password + "-" + bookName + "-"+ authorName);
+	   resource.accept("text/plain").get(ClientResponse.class);
 
-	   }catch (Exception e) {
-		   System.out.println(e.getMessage());
-	   }
-	    
    }
    
    public void demoReserveInterLibrary(String username, String password, String bookName, String authorName) {
 	   
-	   try {
-		   resource = client.resource("http://" + serverLocation + "/DRMS_COMP6231_TEAM10/crunchify/reserveInterLibrary/"+ username +"/"+ password + "/" + bookName + "/"+ authorName);
+	   resource = client.resource("http://" + serverLocation +"/reserve-book-inter-library/"+ username +"-"+ password + "-" + bookName + "-"+ authorName);
+	   resource.accept("text/plain").get(ClientResponse.class);
 
-	   }catch (Exception e) {
-		   System.out.println(e.getMessage());
-	   }
-	   
    }
    
    
