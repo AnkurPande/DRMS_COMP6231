@@ -1,7 +1,5 @@
 package server;
 
-
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -27,6 +25,7 @@ public class UDPSender {
 	DatagramWrapper lastSent = new DatagramWrapper();
 	DatagramWrapper lastReceived = new DatagramWrapper();
 	DatagramPacket packetDock = null;
+	
 	
 	//==================Getter and setters.================================================//
 	/**

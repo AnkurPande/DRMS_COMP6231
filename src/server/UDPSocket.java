@@ -29,7 +29,6 @@ public class UDPSocket extends Thread {
 	DatagramWrapper lastReceived = new DatagramWrapper();
 	DatagramWrapper lastSent = new DatagramWrapper();;
 	DatagramPacket packetDock = null;
-
 	
 	//===== Getter and setters.==========================================			
 	/**
