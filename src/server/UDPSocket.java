@@ -9,6 +9,8 @@ import model.DatagramWrapper;
 
 /**
  * @author Ankurp
+ * This class is the reliable implementation of UDP messaging for Server to Server communication.
+ * It listens for incoming request and response is returned through Reliable UDP
  *
  */
 public class UDPSocket extends Thread {
@@ -16,7 +18,9 @@ public class UDPSocket extends Thread {
 	private int port = 0;
 	private int bytesRead = 0;
 	private int bookmark = 0;
-	private static final int MAX_SIZE = 80;
+	private LibraryServer server;
+	private static final int MAX_SIZE = 480;
+	
 	byte[] bbuff = null;
 	byte[] bytes = null;
 	String response = "";
@@ -26,31 +30,59 @@ public class UDPSocket extends Thread {
 	DatagramWrapper lastSent = new DatagramWrapper();;
 	DatagramPacket packetDock = null;
 
-	private LibraryServer server;
-				
+	
+	//===== Getter and setters.==========================================			
+	/**
+	 * @return the UDP Socket reference.
+	 */ 
 	public DatagramSocket getDGSock() {
 		return DGSock;
 	}
+	
+	/**
+	 * @return port on which server is listening.
+	 */
 	public int getPort() {
 		return port;
 	}
+	
+	/**
+	 * @return the request parameter value.
+	 */
 	public String getRequest() {
 		return request;
 	}
+	
+	/**
+	 * @param set the listening socket.
+	 */
 	public void setDGSock(DatagramSocket dGSock) {
 		DGSock = dGSock;
 	}
+	
+	/**
+	 * @param set the listening port.
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}
+	
+	/**
+	 * @param set request parameter value.
+	 */
 	public void setRequest(String request) {
 		this.request = request;
 	}
 
+	/*======================================================================================*/
+	
+	/**
+	 *  Default construtor.
+	 */
 	public UDPSocket(){}
 	
-	//Initialization
-	public UDPSocket(LibraryServer server){
+	//Initialization of server.
+ 	public UDPSocket(LibraryServer server){
 		//usage checking
     	try {	
     			this.server = server;

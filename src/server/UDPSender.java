@@ -11,8 +11,9 @@ import java.net.SocketTimeoutException;
 import model.DatagramWrapper;
 
 
-/**
- * The Class UDPSender.
+/**@author Ankurp
+ * This class is the reliable implementation of UDP messaging for Server to Server communication.
+ * It sends the request to target server and returns the generated response.
  */
 public class UDPSender {
 	private DatagramSocket DGSock = null;
@@ -27,27 +28,45 @@ public class UDPSender {
 	DatagramWrapper lastReceived = new DatagramWrapper();
 	DatagramPacket packetDock = null;
 	
-	//Getter and setters.+
+	//==================Getter and setters.================================================//
+	/**
+	 * @return target machine port.
+	 */
 	public int getPort() {
 		return targetPort;
 	}
 
+	/**
+	 * @param set the target port.
+	 */
 	public void setPort(int port) {
 		this.targetPort = port;
 	}
 	
+	/**
+	 * @return address of target Machine.
+	 */
 	public InetAddress getAddress() {
 		return address;
 	}
 
+	/**
+	 * @param set the target address
+	 */
 	public void setAddress(InetAddress address) {
 		this.address = address;
 	}
 
+	/**
+	 * @return the request string.
+	 */
 	public String getRequest() {
 		return request;
 	}
 
+	/**
+	 * @param set the request parameter value.
+	 */
 	public void setRequest(String request) {
 		this.request = request;
 	}
@@ -88,6 +107,7 @@ public class UDPSender {
 		this.targetIPAddress = targetAddress;
 	}
 	
+	//==================================================================================================//
 	public UDPSender(){}
 	
 	/**
