@@ -186,20 +186,22 @@ public class UDPSocket extends Thread {
 			}
 			if ( (bookmark < responseSize) && (bytesRead > 0) ) bookmark += bytesRead;
 		    }
+		    
+		  //FIN cycle
+	    	lastSent = new DatagramWrapper(-1, -1, lastReceived.asDatagram().getAddress(), lastReceived.asDatagram().getPort());
+	    	System.out.println("Sending FINS. Will terminate momentarily.");
+	    	
+	    	for ( int i=0; i<20; i++ ) {
+	    	   try {
+	    			DGSock.send(lastSent.asDatagram());
+	    		} catch ( Exception e ) { e.printStackTrace(); }
+	    	}    
     	}
     	catch(Exception e){
     		System.out.println("Exception while Sending response: "+e.getMessage());
    		}
-    	
-    	//FIN cycle
-    	lastSent = new DatagramWrapper(-1, -1, lastReceived.asDatagram().getAddress(), lastReceived.asDatagram().getPort());
-    	System.out.println("Sending FINS. Will terminate momentarily.");
-    	
-    	for ( int i=0; i<20; i++ ) {
-    	   try {
-    			DGSock.send(lastSent.asDatagram());
-    		} catch ( Exception e ) { e.printStackTrace(); }
-    	}    
-    	if (DGSock != null) DGSock.close();
-	}
+    	finally {
+			if (DGSock!= null) DGSock.close();
+		}
+   	}
 }
