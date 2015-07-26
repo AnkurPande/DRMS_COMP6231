@@ -97,7 +97,8 @@ public class DatagramWrapper {
 	return new DatagramWrapper (newStart, newEnd, bytes, pkt.getAddress(), pkt.getPort());				    
     }
 
-    // Getters and setters....
+    // ==============Getters and setters====================//
+    //Changes made according to our project//
 	public long getEnd() {
 		return end;
 	}
