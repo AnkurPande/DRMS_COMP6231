@@ -77,7 +77,7 @@ public class UDPSocket extends Thread {
 	    		lastReceived = DatagramWrapper.fromDatagram(packetDock);
 	    		request = new String(lastReceived.getPayload());
 	       	} catch ( SocketTimeoutException e ) {
-		    	System.out.println("Socket Timeout Exception while Recieve");
+		    	System.out.println("Socket Timeout Exception while Recieve request :"+e.getMessage());
 		    } catch ( Exception e ) {
     	    	System.out.println("Received bad request!\nTerminating program...");
     	    	System.out.println(e.getMessage());
@@ -147,7 +147,8 @@ public class UDPSocket extends Thread {
 				if ( lastReceived.getEnd() < lastSent.getEnd() ) continue;
 				break;
 			    } catch ( SocketTimeoutException e ) {
-			    	System.out.println("Socket Timeout Exception while Send response OR recieving ACK.");
+			    	System.out.println("Socket Timeout Exception while Send response OR recieving ACK."+e.getMessage());
+			    	break;
 			    } catch ( Exception e ) {
 			    	System.out.println(e.getMessage());
 			    }
@@ -166,8 +167,6 @@ public class UDPSocket extends Thread {
     	for ( int i=0; i<20; i++ ) {
     	   try {
     			DGSock.send(lastSent.asDatagram());
-    		} catch ( SocketTimeoutException e ) {
-    		    	System.out.println("Socket Timeout Exception While Sending FINS.");
     		} catch ( Exception e ) { e.printStackTrace(); }
     	}    
     	if (DGSock != null) DGSock.close();
