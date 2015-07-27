@@ -267,7 +267,7 @@ public class Demo implements Runnable {
 		public void run() {
 			
 			flag = false;
-			String activity = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" Demo Thread " + threadNumber + "  stop!"
+			String activity = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" Demo Thread " + threadNumber + "  stop running! "
 					+ "Running time: " + runningTime + "s! " + "total number of RPCs " + numberOfRPC + "!";
 			System.out.println(activity);
 			log(activity);

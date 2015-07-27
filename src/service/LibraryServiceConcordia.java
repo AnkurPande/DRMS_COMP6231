@@ -14,11 +14,20 @@ import com.sun.jersey.spi.resource.Singleton;
 import server.LibraryServer;
 import server.UDPSocket;
 
+/**
+ * The Class LibraryServiceConcordia.
+ * @author Haiyang Sun
+ * 
+ */
+
 @Path("/library-service-concordia")
 @Singleton
 
 public class LibraryServiceConcordia extends LibraryServer {
 
+	/**
+	 * Instantiates a new library service concordia.
+	 */
 	public LibraryServiceConcordia() {
 		
 		super();
@@ -43,6 +52,9 @@ public class LibraryServiceConcordia extends LibraryServer {
 		
 	}
 	
+	/** 
+	 * @see server.LibraryServer#createAccount(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	@Path("/create-account/{firstName}-{lastName}-{emailAddress}-{phoneNumber}-{username}-{password}-{eduInstitution}")
 	@GET
@@ -54,6 +66,9 @@ public class LibraryServiceConcordia extends LibraryServer {
 		return super.createAccount(firstName, lastName, emailAddress, phoneNumber, username, password, eduInstitution);
 	}
 	
+	/**
+	 * @see server.LibraryServer#reserveBook(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	@Path("/reserve-book/{username}-{password}-{bookName}-{authorName}")
 	@GET
@@ -65,6 +80,9 @@ public class LibraryServiceConcordia extends LibraryServer {
 		
 	}
 	
+	/**
+	 * @see server.LibraryServer#reserveInterLibrary(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	@Path("/reserve-book-inter-library/{username}-{password}-{bookName}-{authorName}")
 	@GET
@@ -76,6 +94,9 @@ public class LibraryServiceConcordia extends LibraryServer {
 		return super.reserveInterLibrary(username, password, bookName, authorName);
 	}
 	
+	/**
+	 * @see server.LibraryServer#getNonRetuners(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	@Path("/get-non-returners/{adminUsername}-{adminPassword}-{eduInstitution}-{numDays}")
 	@GET
@@ -86,6 +107,9 @@ public class LibraryServiceConcordia extends LibraryServer {
 		return super.getNonRetuners(adminUsername, adminPassword, eduInstitution, numDays);
 	}
 	
+	/**
+	 * @see server.LibraryServer#setDuration(java.lang.String, java.lang.String, int)
+	 */
 	@Override
 	@Path("/set-duration/{username}-{bookName}-{numOfDays}")
 	@GET
