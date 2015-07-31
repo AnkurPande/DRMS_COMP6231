@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Timer;
@@ -27,6 +29,8 @@ public class Demo implements Runnable {
 	private int runningTime;
 	
 	private long numberOfRPC = 0;
+	
+	private static List<Thread> threadList = new ArrayList<Thread>();
 	/**
 	 * Instantiates a new demo.
 	 *
@@ -172,6 +176,8 @@ public class Demo implements Runnable {
 		Timer timer = new Timer();
 		timer.schedule(new Stop(), runningTime*1000);
 		demo();
+		timer.cancel();
+		timer.purge();
 
 	}
 	
@@ -183,11 +189,14 @@ public class Demo implements Runnable {
 	 */
 	public static void main(String[] args) {
 		
-		System.out.println("Please input demo running time (in seconds).");
+		System.out.println("Please input demo running time (in seconds) of each thread.");
 		Scanner sc = new Scanner(System.in);
 		int runningDuration = sc.nextInt();
 		sc.close();
 		
+		long startTime=System.currentTimeMillis();
+		System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + " Demo Start!");
+
 		//Initialize log file
 		try{
 			File f = new File( "demo_log.txt");
@@ -202,11 +211,29 @@ public class Demo implements Runnable {
 			Demo demo = new Demo(i+1);
 			demo.setRunningTime(runningDuration);
 			Thread thread = new Thread(demo);
+			threadList.add(thread);
+			
 			thread.start();
 			String activity = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" Demo Thread " + (i+1) + " Start running!";
 			log(activity);
 			System.out.println(activity);
 		}
+		
+		try {
+			Thread.sleep(1000);
+			
+			for(Thread t: threadList) {
+				t.join();
+			}
+			
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		long endTime=System.currentTimeMillis();
+		System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + " Demo stop! Total demo time "+((endTime-startTime)/1000)+"s"); 
 	}
 	
 	/**
@@ -269,8 +296,8 @@ public class Demo implements Runnable {
 			flag = false;
 			String activity = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) +" Demo Thread " + threadNumber + "  stop running! "
 					+ "Running time: " + runningTime + "s! " + "total number of RPCs " + numberOfRPC + "!";
-			System.out.println(activity);
 			log(activity);
+			System.out.println(activity);
 		}
 		
 	}
