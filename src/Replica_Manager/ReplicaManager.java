@@ -2,7 +2,7 @@ package Replica_Manager;
 
 import java.util.HashMap;
 
-public class ReplicaManager {
+public class ReplicaManager implements Runnable {
 		
 	public final int CURRENT_RM_ID = 1;
 	
@@ -11,9 +11,16 @@ public class ReplicaManager {
 
 	
 	/* CONSTRUCTOR */
-	public ReplicaManager() {
+	ReplicaManager() {
 		
 		this.replicaManagerValues();
+	}
+	
+	
+	@Override
+	public void run()
+	{
+		handleHeartBeatResponse();
 	}
 	
 	
@@ -66,8 +73,8 @@ public class ReplicaManager {
 	 * @return a string value
 	 */
 	public String handleHeartBeatResponse()	{
-		return null;
 		
+		return null;		
 	}
 	
 	/**
