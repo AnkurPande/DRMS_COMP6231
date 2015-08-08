@@ -58,7 +58,7 @@ public class HeartBeatDispatcher implements Runnable {
 	 */
 	public void dispatchHeartBeat(String rmId, int port, String address) {		
 		UDPSender sender = new UDPSender(port, address);		
-		String udpMessage = "alive";		
+		String udpMessage = "isAlive";		
 		sender.sendMessage(udpMessage);		
 	}
 }

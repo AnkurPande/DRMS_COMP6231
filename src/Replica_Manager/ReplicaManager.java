@@ -1,5 +1,11 @@
 package Replica_Manager;
 
+import server.UDPSender;
+import server.UDPSocket;
+
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.HashMap;
 
 public class ReplicaManager implements Runnable {
@@ -72,9 +78,31 @@ public class ReplicaManager implements Runnable {
 	 * @param 
 	 * @return a string value
 	 */
-	public String handleHeartBeatResponse()	{
+	public void handleHeartBeatResponse()	{
+		DatagramSocket socket = null;
+		String responseMessageString = "";
 		
-		return null;		
+		try {
+			socket = new DatagramSocket(rmPorts.get(1), InetAddress.getByName(rmIps.get(1)));		
+			byte[] buffer = new byte[1000];
+			
+			while(true){
+				DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
+				socket.receive(requestPacket);
+								
+				byte[] message = requestPacket.getData();
+				
+				responseMessageString = "Alive";
+				message = responseMessageString.getBytes();
+				
+				DatagramPacket responsePacket = new DatagramPacket(message, message.length, requestPacket.getAddress(), requestPacket.getPort());
+				socket.send(responsePacket);
+			}
+		} catch (Exception e) {
+			System.out.println("UDP Exception");
+		} finally {
+			if (socket != null) socket.close();
+		}
 	}
 	
 	/**
