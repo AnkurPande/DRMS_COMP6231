@@ -25,6 +25,7 @@ public class UDPSocket extends Thread {
 		DatagramSocket socket = null;
 		String responseMessageString = "";
 		UDPSender frontEndSender = null;
+		UDPSender heartBeatSender = null;
 		try {
 			//Initialize sender to send response to front end
 			frontEndSender = new UDPSender(FRONTEND_UDP_PORT,FRONTEND_HOST);
@@ -46,6 +47,11 @@ public class UDPSocket extends Thread {
 					//non return request
 					String numDays = requestParts[1].trim();
 					responseMessageString = server.checkNonRetuners(numDays);
+					frontEndSender.sendOnly(responseMessageString);
+				}
+				else if(requestParts[1].equals("isAlive")) {
+					String heartBeatMessage = "";
+					heartBeatSender.sendMessage(heartBeatMessage);
 				}
 				else 
 				{
@@ -70,8 +76,8 @@ public class UDPSocket extends Thread {
 						server.confirmRemoteReservation(requestParts[1].trim(),requestParts[2].trim());
 						responseMessageString = "true";
 					}
-				}
-				frontEndSender.sendOnly(responseMessageString);
+					frontEndSender.sendOnly(responseMessageString);
+				}				
 			}
 			
 			

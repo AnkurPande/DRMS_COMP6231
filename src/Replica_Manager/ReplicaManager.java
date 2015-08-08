@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class ReplicaManager implements Runnable {
 		
-	public final int CURRENT_RM_ID = 1;
+	public String CURRENT_RM_ID = "1";
 	
 	HashMap<Integer, Integer> rmPorts = new HashMap<Integer, Integer>();
 	HashMap<Integer, String> rmIps = new HashMap<Integer, String>();
@@ -26,6 +26,7 @@ public class ReplicaManager implements Runnable {
 	@Override
 	public void run()
 	{
+		startHeartBeatProcess();
 		handleHeartBeatResponse();
 	}
 	
@@ -54,7 +55,7 @@ public class ReplicaManager implements Runnable {
 	 * @param nothing
 	 * @return CURRENT_RM_ID
 	 */
-	public int getReplicaManagerID() {
+	public String getReplicaManagerID() {
 		return this.CURRENT_RM_ID;		
 	}
 	
@@ -73,7 +74,7 @@ public class ReplicaManager implements Runnable {
 	
 	
 	/**
-	 * This method will receive a response from heart beat response and take action according to response
+	 * This method will receive a response from heart beat response and return replica manager ID
 	 *
 	 * @param 
 	 * @return a string value
@@ -86,13 +87,13 @@ public class ReplicaManager implements Runnable {
 			socket = new DatagramSocket(rmPorts.get(1), InetAddress.getByName(rmIps.get(1)));		
 			byte[] buffer = new byte[1000];
 			
-			while(true){
+			while(true) {
 				DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
 				socket.receive(requestPacket);
 								
 				byte[] message = requestPacket.getData();
 				
-				responseMessageString = "Alive";
+				responseMessageString = this.getReplicaManagerID(); // getting current replica manager ID
 				message = responseMessageString.getBytes();
 				
 				DatagramPacket responsePacket = new DatagramPacket(message, message.length, requestPacket.getAddress(), requestPacket.getPort());
@@ -104,6 +105,7 @@ public class ReplicaManager implements Runnable {
 			if (socket != null) socket.close();
 		}
 	}
+	
 	
 	/**
 	 * This method will recover a dead replica manager.
