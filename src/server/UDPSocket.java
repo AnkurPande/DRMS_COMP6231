@@ -12,6 +12,10 @@ public class UDPSocket extends Thread {
 	
 	private LibraryServer server;
 	
+	public static final String FRONTEND_HOST = "localhost";
+	
+	public static final int FRONTEND_UDP_PORT = 3100;
+	
 	public UDPSocket(LibraryServer server) {
 		this.server = server;
 		
@@ -20,9 +24,12 @@ public class UDPSocket extends Thread {
 	public void run() {
 		DatagramSocket socket = null;
 		String responseMessageString = "";
+		UDPSender frontEndSender = null;
 		try {
+			//Initialize sender to send response to front end
+			frontEndSender = new UDPSender(FRONTEND_UDP_PORT,FRONTEND_HOST);
 			
-			
+			//Initialize socket to receive response
 			socket = new DatagramSocket(server.getPortOfUDP(), InetAddress.getByName(server.getIpAddress()));
 			byte[] buffer = new byte[1000];
 			
@@ -40,7 +47,8 @@ public class UDPSocket extends Thread {
 					String numDays = requestParts[1].trim();
 					responseMessageString = server.checkNonRetuners(numDays);
 				}
-				else {
+				else 
+				{
 					/*
 					 * reserve request
 					 * 
@@ -62,13 +70,8 @@ public class UDPSocket extends Thread {
 						server.confirmRemoteReservation(requestParts[1].trim(),requestParts[2].trim());
 						responseMessageString = "true";
 					}
-					
 				}
-				
-				message = responseMessageString.getBytes();
-				
-				DatagramPacket responsePacket = new DatagramPacket(message, message.length, requestPacket.getAddress(), requestPacket.getPort());
-				socket.send(responsePacket);
+				frontEndSender.sendOnly(responseMessageString);
 			}
 			
 			

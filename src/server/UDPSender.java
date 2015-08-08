@@ -38,10 +38,10 @@ public class UDPSender {
 		DatagramSocket socket = null;
 
 		try {
-			socket = new DatagramSocket();
-			InetAddress host = InetAddress.getByName(this.getTargetAddress());
-			
-			byte[] udpMessage = (message).getBytes();
+			socket                    = new DatagramSocket();
+			InetAddress host          = InetAddress.getByName(this.getTargetAddress());
+			String requestData 		  = message;
+			byte[] udpMessage         = requestData.getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
 			socket.send(sendPacket);
 			
@@ -63,6 +63,22 @@ public class UDPSender {
 		return null;
 	}
 	
+	public void sendOnly(String message) {
+		DatagramSocket socket = null;
+		
+		try{
+			socket 			          = new DatagramSocket();
+			InetAddress host 		  = InetAddress.getByName(this.getTargetAddress()); //change for IP address
+			String requestData 		  = message;
+			byte [] udpMessage		  = requestData.getBytes();
+			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
+			socket.send(sendPacket);
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			socket.close();
+		}
+	}
 	/**
 	 * Gets the target port.
 	 *
@@ -99,3 +115,4 @@ public class UDPSender {
 		this.targetAddress = targetAddress;
 	}
 }
+
