@@ -21,11 +21,19 @@ public class LibraryServerReplica implements Runnable{
 	/*
 	 * Properties of server
 	 */
+	private int replicaID;
+	
+	private int heartBeatListenPort;
+	
+	private int heartBeatReplyPort;
+	
 	private String nameOfServer;
 
 	private int portOfUDP;
 	
 	private ReplicaUDPListener socket;
+	
+	private Heartbeat heartBeatSocket;
 	
 	private  List<Book> bookshelf = new ArrayList<Book>();
 	
@@ -34,6 +42,7 @@ public class LibraryServerReplica implements Runnable{
 	private  Map<Integer, String> UDPInfo = new HashMap<Integer, String>();
 	
 	private String ipAddress;
+	
 	
 	
 	
@@ -62,6 +71,23 @@ public class LibraryServerReplica implements Runnable{
 		
 		public static final int UDEM_UDP_PORT = 4449;
 		
+		//Listen heartbeat port
+		
+		public static final int CONCORDIA_HEARTBEAT_PORT = 7001;
+		
+		public static final int MCGILL_HEARTBEAT_PORT = 7002;
+		
+		public static final int UDEM_HEARTBEAT_PORT = 7003;
+		
+		//Heartbeat reply port
+		
+		public static final int COCORDIA_HEARTBEAT_REPLY_PORT = 9001;
+		
+		public static final int MCGILL_HEARTBEAT_REPLY_PORT = 9002;
+		
+		public static final int UDEM_HEARTBEAT_REPLY_PORT = 9003;
+		
+		//IP ADDRESS
 		
 		public static final String CONCORDIA_IP_ADDRESS = "localhost";
 		
@@ -90,6 +116,8 @@ public class LibraryServerReplica implements Runnable{
 		this.nameOfServer = info.getServerName();
 		this.portOfUDP = info.getPortOfUDP();
 		this.ipAddress = info.getIpAddress();
+		this.heartBeatListenPort = info.getHeartbeatPort();
+		this.heartBeatReplyPort = info.getHeartBeatreplyPort();
 		
 		//Initialize list of UDPPorts
 		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.CONCORDIA_IP_ADDRESS);
@@ -412,6 +440,8 @@ public class LibraryServerReplica implements Runnable{
 		
 		
 		this.socket = new ReplicaUDPListener(this);
+		this.heartBeatSocket = new Heartbeat(this);
+		heartBeatSocket.start();
 		socket.start();	
 	}
 	
@@ -532,6 +562,38 @@ public class LibraryServerReplica implements Runnable{
 		this.ipAddress = ipAddress;
 	}
 
+	public static void main(String args[]){
+		LibraryServerInfo info1 = new LibraryServerInfo(1,ConstantValue.CONCORDIA,
+				ConstantValue.COCORDIA_UDP_PORT,ConstantValue.CONCORDIA_IP_ADDRESS,
+				ConstantValue.CONCORDIA_HEARTBEAT_PORT,ConstantValue.COCORDIA_HEARTBEAT_REPLY_PORT);
+		
+		LibraryServerInfo info2 = new LibraryServerInfo(2,ConstantValue.MCGILL,
+				ConstantValue.MCGILL_UDP_PORT,ConstantValue.MCGILL_IP_ADDRESS,
+				ConstantValue.MCGILL_HEARTBEAT_PORT,ConstantValue.MCGILL_HEARTBEAT_REPLY_PORT);
+		
+		LibraryServerInfo info3 = new LibraryServerInfo(3,ConstantValue.UDEM,
+				ConstantValue.UDEM_UDP_PORT,ConstantValue.UDEM_IP_ADDRESS,
+				ConstantValue.UDEM_HEARTBEAT_PORT,ConstantValue.UDEM_HEARTBEAT_REPLY_PORT);
+		
+		LibraryServerReplica concordia = new LibraryServerReplica(info1);
+		concordia.initializeTestingData();
+		
+		LibraryServerReplica mcgill = new LibraryServerReplica(info2);
+		mcgill.initializeTestingData();
+		
+		LibraryServerReplica udem = new LibraryServerReplica(info3);
+		udem.initializeTestingData();
+		
+		Thread library1 = new Thread(concordia);
+		library1.start();
+			
+		Thread library2 = new Thread(mcgill);
+		library2.start();
+				
+		Thread library3 = new Thread(udem);
+		library3.start();
+		
+	}
 
 	/*
 	 * Initialize testing data.
@@ -577,5 +639,29 @@ public class LibraryServerReplica implements Runnable{
 		getBookshelf().add(book);
 		
 		
+	}
+
+	public int getHeartBeatListenPort() {
+		return heartBeatListenPort;
+	}
+
+	public void setHeartBeatListenPort(int heartBeatListenPort) {
+		this.heartBeatListenPort = heartBeatListenPort;
+	}
+
+	public int getReplicaID() {
+		return replicaID;
+	}
+
+	public void setReplicaID(int replicaID) {
+		this.replicaID = replicaID;
+	}
+
+	public int getHeartBeatReplyPort() {
+		return heartBeatReplyPort;
+	}
+
+	public void setHeartBeatReplyPort(int heartBeatReplyPort) {
+		this.heartBeatReplyPort = heartBeatReplyPort;
 	}
 }
