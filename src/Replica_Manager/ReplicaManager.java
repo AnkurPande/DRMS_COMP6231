@@ -4,15 +4,21 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+
 public class ReplicaManager implements Runnable {
 		
 	public String CURRENT_RM_ID;
 	public int CURRENT_RM_PORT;
 	public String CURRENT_RM_IP;
+	
+	private HeartBeatDispatcher hb;
 
 	
 	/* CONSTRUCTOR */
 	ReplicaManager(String RmID, int RmPort, String RmIP) {
+		
+		hb = new HeartBeatDispatcher();
+		
 		this.CURRENT_RM_ID = RmID;
 		this.CURRENT_RM_PORT = RmPort;
 		this.CURRENT_RM_IP = RmIP;

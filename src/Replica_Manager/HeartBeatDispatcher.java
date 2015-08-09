@@ -46,7 +46,7 @@ public class HeartBeatDispatcher implements Runnable {
 		
 		
 		/* REPLICA Values */
-		/*
+		
 		REPLICA_PORTS.put(1, 6001);
 		REPLICA_PORTS.put(2, 6002);
 		REPLICA_PORTS.put(3, 6003);
@@ -54,7 +54,7 @@ public class HeartBeatDispatcher implements Runnable {
 		REPLICA_IPS.put(1, "localhost");
 		REPLICA_IPS.put(2, "localhost");
 		REPLICA_IPS.put(3, "localhost");
-		*/
+		
 	}
 	
 	
@@ -127,8 +127,14 @@ public class HeartBeatDispatcher implements Runnable {
 		String udpMessage = "isAlive";		
 		REPLICA_MANAGER_RESPOSNE = sender.sendMessage(udpMessage);	// UDP response from replica manager will be received here
 		
-		// Based on the response from RM we will check if each of RM replied or not. If one of the RM didn't replied we will assume it is dead and call recovery method for that RM
-		System.out.println("RM response: "+ REPLICA_MANAGER_RESPOSNE);
+		if(!REPLICA_MANAGER_RESPOSNE.equals(rmId) || REPLICA_MANAGER_RESPOSNE.isEmpty()) {
+			/*
+			 * TODO
+			 * Call restart Replica Manager method
+			 * USE rmID to restart specific replica manager
+			 */
+		}
+			
 	}
 	
 	
@@ -138,51 +144,23 @@ public class HeartBeatDispatcher implements Runnable {
 	 * @param port
 	 * @return Nothing
 	 */
-	public void dispatchHeartBeatToReplica(String rmId, int port, String address) {
+	public void dispatchHeartBeatToReplica(String rId, int port, String address) {
 		String REPLICA_RESPOSNE = "";
 		UDPSender sender = new UDPSender(port, address);		
 		String udpMessage = "isAlive";		
-		REPLICA_RESPOSNE = sender.sendMessage(udpMessage);	// UDP response from replica manager will be received here
+		REPLICA_RESPOSNE = sender.sendMessage(udpMessage);	// UDP response from replica will be received here			
 		
-		// Based on the response from RM we will check if each of RM replied or not. If one of the RM didn't replied we will assume it is dead and call recovery method for that RM
-		System.out.println("Replica response: "+ REPLICA_RESPOSNE);
+		if(!REPLICA_RESPOSNE.equals(rId) || REPLICA_RESPOSNE.isEmpty()) {
+			/*
+			 * TODO
+			 * Call restart Replica Manager method
+			 * USE rId to restart specific replica manager
+			 */
+		}
 	}
 	 
 	
-	/**
-	 * This method will recover a dead replica manager.
-	 *
-	 * @param RmID: Replica Manager ID
-	 * @return a boolean indicate success or not
-	 */
-	public boolean recoverReplicaManager(int RmID){
-		return true;		
-	}
-	
-	
-	/**
-	 * This method will recover a dead replica manager.
-	 *
-	 * @param RmID: Replica Manager ID
-	 * @return a boolean indicate success or not
-	 */
-	public boolean recoverReplica(int ReplicaID){
-		return true;		
-	}
-	
-	
-	
 	public static void main(String [] args) {		
-		
-		HeartBeatDispatcher RM1 = new HeartBeatDispatcher();		
-		RM1.run();
-		
-		HeartBeatDispatcher RM2 = new HeartBeatDispatcher();
-		Thread t2 = new Thread(RM2);
-		t2.run();
-		
-		HeartBeatDispatcher RM3 = new HeartBeatDispatcher();
-		Thread t3 = new Thread(RM3);
-		t3.run();	
+			
 	}
 }
