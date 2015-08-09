@@ -36,9 +36,9 @@ public class HeartBeatDispatcher implements Runnable {
 	private void replicaManagerValues() {
 		
 		/* REPLICA MANAGER Values */
-		REPLICA_MANAGER_PORTS.put(1, 5001);
-		REPLICA_MANAGER_PORTS.put(2, 5002);
-		REPLICA_MANAGER_PORTS.put(3, 5003);
+		REPLICA_MANAGER_PORTS.put(1, 6001);
+		REPLICA_MANAGER_PORTS.put(2, 6002);
+		REPLICA_MANAGER_PORTS.put(3, 6003);
 		
 		REPLICA_MANAGER_IPS.put(1, "localhost");
 		REPLICA_MANAGER_IPS.put(2, "localhost");
@@ -47,9 +47,9 @@ public class HeartBeatDispatcher implements Runnable {
 		
 		/* REPLICA Values */
 		
-		REPLICA_PORTS.put(1, 6001);
-		REPLICA_PORTS.put(2, 6002);
-		REPLICA_PORTS.put(3, 6003);
+		REPLICA_PORTS.put(1, 7001);
+		REPLICA_PORTS.put(2, 7002);
+		REPLICA_PORTS.put(3, 7003);
 		
 		REPLICA_IPS.put(1, "localhost");
 		REPLICA_IPS.put(2, "localhost");
