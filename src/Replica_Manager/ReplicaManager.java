@@ -17,11 +17,29 @@ public class ReplicaManager implements Runnable {
 	/* CONSTRUCTOR */
 	ReplicaManager(String RmID, int RmPort, String RmIP) {
 		
-		hb = new HeartBeatDispatcher();
+		hb = new HeartBeatDispatcher(this);
 		
 		this.CURRENT_RM_ID = RmID;
 		this.CURRENT_RM_PORT = RmPort;
 		this.CURRENT_RM_IP = RmIP;
+		
+		this.startReplica();
+	}
+	
+	
+	
+	public void startReplica() {
+		
+		
+	}
+	
+	public void restartReplica() {
+		
+	}
+	
+	public void revoverReplicaManager(String rmID) {
+		
+		
 	}
 	
 	
@@ -77,17 +95,18 @@ public class ReplicaManager implements Runnable {
 	}
 	
 	
+	
 	public static void main(String [] args)
 	{
-		ReplicaManager r1 = new ReplicaManager("1", 5001, "localhost");
+		ReplicaManager r1 = new ReplicaManager("1", 6001, "localhost");
 		Thread t1 = new Thread(r1);
 		t1.run();
 		
-		ReplicaManager r2 = new ReplicaManager("2", 5002, "localhost");
+		ReplicaManager r2 = new ReplicaManager("2", 6002, "localhost");
 		Thread t2 = new Thread(r2);
 		t2.run();	
 		
-		ReplicaManager r3 = new ReplicaManager("3", 5003, "localhost");
+		ReplicaManager r3 = new ReplicaManager("3", 6003, "localhost");
 		Thread t3 = new Thread(r3);
 		t3.run();	
 	}

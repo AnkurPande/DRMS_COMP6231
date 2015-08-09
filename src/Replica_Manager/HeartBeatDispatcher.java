@@ -16,14 +16,16 @@ public class HeartBeatDispatcher implements Runnable {
 	HashMap<Integer, Integer> REPLICA_MANAGER_PORTS = new HashMap<Integer, Integer>();
 	HashMap<Integer, String> REPLICA_MANAGER_IPS = new HashMap<Integer, String>();
 	
-	
+	ReplicaManager rm;
 	
 	/**
 	 * Constructor setting variables
 	 * @return Nothing
 	 */
-	HeartBeatDispatcher() {		
+	HeartBeatDispatcher(ReplicaManager rm) {		
 		this.replicaManagerValues();
+		this.setRm(rm);
+	
 	}
 	
 	
@@ -128,11 +130,8 @@ public class HeartBeatDispatcher implements Runnable {
 		REPLICA_MANAGER_RESPOSNE = sender.sendMessage(udpMessage);	// UDP response from replica manager will be received here
 		
 		if(!REPLICA_MANAGER_RESPOSNE.equals(rmId) || REPLICA_MANAGER_RESPOSNE.isEmpty()) {
-			/*
-			 * TODO
-			 * Call restart Replica Manager method
-			 * USE rmID to restart specific replica manager
-			 */
+			
+			rm.revoverReplicaManager(rmId);
 		}
 			
 	}
@@ -151,16 +150,24 @@ public class HeartBeatDispatcher implements Runnable {
 		REPLICA_RESPOSNE = sender.sendMessage(udpMessage);	// UDP response from replica will be received here			
 		
 		if(!REPLICA_RESPOSNE.equals(rId) || REPLICA_RESPOSNE.isEmpty()) {
-			/*
-			 * TODO
-			 * Call restart Replica Manager method
-			 * USE rId to restart specific replica manager
-			 */
+			
+			rm.restartReplica();
+			
 		}
 	}
 	 
 	
 	public static void main(String [] args) {		
 			
+	}
+
+
+	public ReplicaManager getRm() {
+		return rm;
+	}
+
+
+	public void setRm(ReplicaManager rm) {
+		this.rm = rm;
 	}
 }
