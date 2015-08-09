@@ -15,6 +15,7 @@ public class UDPSender {
 	
 	private String targetAddress;
 	
+	private InetAddress address;
 	/**
 	 * Instantiates a new UDP sender.
 	 *
@@ -26,14 +27,16 @@ public class UDPSender {
 		this.setTargetAddress(address);
 	}
 
+	public UDPSender() {
+		// TODO Auto-generated constructor stub
+	}
+
 	/**
 	 * Send a UDP message and return the reply.
 	 *
 	 * @param message the message
 	 * @return the string
 	 */
-	
-	
 	public String sendMessage(String message) {
 		DatagramSocket socket = null;
 
@@ -61,6 +64,27 @@ public class UDPSender {
 			if (socket != null) socket.close();
 		}
 		return null;
+	}
+	
+	public void sendHeartBeat(String message) {
+		DatagramSocket socket = null;
+
+		try {
+			socket                    = new DatagramSocket();
+			InetAddress host          = this.getAddress();
+			String requestData 		  = message;
+			byte[] udpMessage         = requestData.getBytes();
+			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
+			socket.send(sendPacket);
+			
+		} catch (SocketException e) {
+			System.out.println("Socket: " + e.getMessage());
+		} catch (IOException e) {
+			System.out.println("IO: " + e.getMessage());
+		} finally {
+			if (socket != null) socket.close();
+		}
+		
 	}
 	
 	public void sendOnly(String message) {
@@ -114,5 +138,12 @@ public class UDPSender {
 	public void setTargetAddress(String targetAddress) {
 		this.targetAddress = targetAddress;
 	}
-}
 
+	public InetAddress getAddress() {
+		return address;
+	}
+
+	public void setAddress(InetAddress address) {
+		this.address = address;
+	}
+}

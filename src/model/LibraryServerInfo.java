@@ -5,6 +5,7 @@ package model;
  */
 public class LibraryServerInfo {
 	
+	private int replicaID;
 	/** The port of udp. */
 	private int portOfUDP;
 	
@@ -13,16 +14,23 @@ public class LibraryServerInfo {
 	
 	private String ipAddress;
 	
+	private int heartbeatPort;
+	
+	private int heartBeatreplyPort;
+	
 	/**
 	 * Instantiates a new library server info.
 	 *
 	 * @param name the name
 	 * @param port the port
 	 */
-	public LibraryServerInfo(String name, int port, String inetAddress) {
+	public LibraryServerInfo(int replicaID, String name, int port, String inetAddress,int heartbeat,int heartbeatreplyport) {
+		this.replicaID = replicaID;
 		this.serverName = name;
 		this.portOfUDP = port;
 		this.setIpAddress(inetAddress);
+		this.heartbeatPort = heartbeat;
+		this.heartBeatreplyPort = heartbeatreplyport;
 	}
 	
 	
@@ -75,6 +83,36 @@ public class LibraryServerInfo {
 
 	public void setIpAddress(String ipAddress) {
 		this.ipAddress = ipAddress;
+	}
+
+
+	public int getHeartbeatPort() {
+		return heartbeatPort;
+	}
+
+
+	public void setHeartbeatPort(int heartbeatPort) {
+		this.heartbeatPort = heartbeatPort;
+	}
+
+
+	public int getHeartBeatreplyPort() {
+		return heartBeatreplyPort;
+	}
+
+
+	public void setHeartBeatreplyPort(int heartBeatreplyPort) {
+		this.heartBeatreplyPort = heartBeatreplyPort;
+	}
+
+
+	public int getReplicaID() {
+		return replicaID;
+	}
+
+
+	public void setReplicaID(int replicaID) {
+		this.replicaID = replicaID;
 	}
 
 	

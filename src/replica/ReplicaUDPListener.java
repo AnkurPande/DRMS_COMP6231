@@ -18,7 +18,7 @@ public class ReplicaUDPListener extends Thread {
 	
 	public static final String FRONTEND_HOST = "localhost";
 	
-	public static final int FRONTEND_UDP_PORT = 3100;
+	public static final int FRONTEND_UDP_PORT =5002 ;
 	
 	public ReplicaUDPListener(LibraryServerReplica server) {
 		this.server = server;
@@ -29,7 +29,7 @@ public class ReplicaUDPListener extends Thread {
 		DatagramSocket socket = null;
 		String responseMessageString = "";
 		UDPSender frontEndSender = null;
-		UDPSender heartBeatSender = null;
+		
 		try {
 			//Initialize sender to send response to front end
 			frontEndSender = new UDPSender(FRONTEND_UDP_PORT,FRONTEND_HOST);
@@ -53,11 +53,6 @@ public class ReplicaUDPListener extends Thread {
 					responseMessageString = server.checkNonRetuners(numDays);
 					frontEndSender.sendOnly(responseMessageString);
 				}
-				else if(requestParts[1].equals("isAlive")) {
-					String heartBeatMessage = "";
-					heartBeatSender.sendMessage(heartBeatMessage);
-				}
-							
 			}
 			
 			
