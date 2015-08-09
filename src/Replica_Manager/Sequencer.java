@@ -239,4 +239,24 @@ public class Sequencer extends Thread{
 		}
 	}
 	
+	public static void main(String[] args)
+	{
+		try{
+			
+			Sequencer s1 = new Sequencer(true, 8001,9001,"224.0.0.1", "localhost");
+			Sequencer s2 = new Sequencer(false, 8001,9001,"224.0.0.1", "localhost");
+			Sequencer s3 = new Sequencer(false, 8001,9001,"224.0.0.1", "localhost");
+			
+			s1.start();
+			s2.start();
+			s3.start();
+			
+			System.out.println("I'm here!!!");
+		}
+		catch(IOException e)
+		{
+			System.out.println("IO: " + e.getMessage());
+		}
+	}
+	
 }
