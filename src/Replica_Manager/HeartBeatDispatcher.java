@@ -109,6 +109,7 @@ public class HeartBeatDispatcher implements Runnable {
 				        String address = REPLICA_IPS.get(pair.getKey()).toString();
 				        this.dispatchHeartBeatToReplica(pair.getKey().toString(), (int) pair.getValue(), address);
 				        //it.remove(); // avoids a ConcurrentModificationException
+				        
 				    }		
 			}
 		} catch (InterruptedException e) {
@@ -124,6 +125,7 @@ public class HeartBeatDispatcher implements Runnable {
 	 * @return Nothing
 	 */
 	public void dispatchHeartBeatToReplicaManager(String rmId, int port, String address) {
+		
 		String REPLICA_MANAGER_RESPOSNE = "";
 		UDPSender sender = new UDPSender(port, address);		
 		String udpMessage = "isAlive";		
