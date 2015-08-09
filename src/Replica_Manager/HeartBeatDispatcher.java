@@ -147,7 +147,7 @@ public class HeartBeatDispatcher implements Runnable {
 		// Based on the response from RM we will check if each of RM replied or not. If one of the RM didn't replied we will assume it is dead and call recovery method for that RM
 		System.out.println("Replica response: "+ REPLICA_RESPOSNE);
 	}
-	
+	 
 	
 	/**
 	 * This method will recover a dead replica manager.

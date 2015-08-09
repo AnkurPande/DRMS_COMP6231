@@ -35,7 +35,7 @@ public class ReplicaManager implements Runnable {
 	public String getReplicaManagerID() {
 		return this.CURRENT_RM_ID;		
 	}
-		
+		 
 	
 	/**
 	 * This method will receive a response from heart beat response and return replica manager ID
