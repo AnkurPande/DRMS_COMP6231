@@ -243,9 +243,9 @@ public class Sequencer extends Thread{
 	{
 		try{
 			
-			Sequencer s1 = new Sequencer(true, 8001,9001,"224.0.0.1", "localhost");
-			Sequencer s2 = new Sequencer(false, 8001,9001,"224.0.0.1", "localhost");
-			Sequencer s3 = new Sequencer(false, 8001,9001,"224.0.0.1", "localhost");
+			Sequencer s1 = new Sequencer(true, 8001,9001,"234.1.2.1", "localhost");
+			Sequencer s2 = new Sequencer(false, 8001,9001,"234.1.2.1", "localhost");
+			Sequencer s3 = new Sequencer(false, 8001,9001,"234.1.2.1", "localhost");
 			
 			s1.start();
 			s2.start();

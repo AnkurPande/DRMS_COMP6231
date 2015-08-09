@@ -11,14 +11,20 @@ public class ReplicaManager implements Runnable {
 	public int CURRENT_RM_PORT;
 	public String CURRENT_RM_IP;
 	
-	private HeartBeatDispatcher hb;
+	private HeartBeatDispatcher dispatcher;
+	private HeartBeatListener listener;
 
 	
 	/* CONSTRUCTOR */
 	ReplicaManager(String RmID, int RmPort, String RmIP) {
 		
-		hb = new HeartBeatDispatcher(this);
+		dispatcher = new HeartBeatDispatcher(this);
+		listener = new HeartBeatListener(this);
 		
+		listener.start();
+
+		dispatcher.start();
+
 		this.CURRENT_RM_ID = RmID;
 		this.CURRENT_RM_PORT = RmPort;
 		this.CURRENT_RM_IP = RmIP;
@@ -39,14 +45,14 @@ public class ReplicaManager implements Runnable {
 	
 	public void revoverReplicaManager(String rmID) {
 		
-		
+		System.out.println("fuck");
 	}
 	
 	
 	@Override
 	public void run()
 	{
-		handleHeartBeatResponse();
+
 	}
 	
 	
@@ -61,38 +67,7 @@ public class ReplicaManager implements Runnable {
 	}
 		 
 	
-	/**
-	 * This method will receive a response from heart beat response and return replica manager ID
-	 *
-	 * @param 
-	 * @return a string value
-	 */
-	public void handleHeartBeatResponse()	{
-		DatagramSocket socket = null;
-		String responseMessageString = "";
-		
-		try {
-			socket = new DatagramSocket(this.CURRENT_RM_PORT, InetAddress.getByName(this.CURRENT_RM_IP));		
-			byte[] buffer = new byte[1000];
-			
-			while(true) {
-				DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
-				socket.receive(requestPacket);
-								
-				byte[] message = requestPacket.getData();
-				
-				responseMessageString = this.getReplicaManagerID(); // getting current replica manager ID
-				message = responseMessageString.getBytes();
-				
-				DatagramPacket responsePacket = new DatagramPacket(message, message.length, requestPacket.getAddress(), requestPacket.getPort());
-				socket.send(responsePacket);
-			}
-		} catch (Exception e) {
-			System.out.println("UDP Exception");
-		} finally {
-			if (socket != null) socket.close();
-		}
-	}
+	
 	
 	
 	
@@ -100,15 +75,13 @@ public class ReplicaManager implements Runnable {
 	{
 		ReplicaManager r1 = new ReplicaManager("1", 6001, "localhost");
 		Thread t1 = new Thread(r1);
-		t1.run();
+		t1.start();
 		
 		ReplicaManager r2 = new ReplicaManager("2", 6002, "localhost");
 		Thread t2 = new Thread(r2);
-		t2.run();	
+		t2.start();
 		
-		ReplicaManager r3 = new ReplicaManager("3", 6003, "localhost");
-		Thread t3 = new Thread(r3);
-		t3.run();	
+		
 	}
 	
 }

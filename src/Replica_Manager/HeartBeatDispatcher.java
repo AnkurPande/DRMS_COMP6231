@@ -6,9 +6,9 @@ import java.util.Map;
 
 import server.UDPSender;
 
-public class HeartBeatDispatcher implements Runnable {
+public class HeartBeatDispatcher extends Thread  {
 
-	public static int SLEEP_TIME = 5;
+	public static int SLEEP_TIME = 20;
 	
 	HashMap<Integer, Integer> REPLICA_PORTS = new HashMap<Integer, Integer>();
 	HashMap<Integer, String> REPLICA_IPS = new HashMap<Integer, String>();
@@ -128,9 +128,9 @@ public class HeartBeatDispatcher implements Runnable {
 		
 		String REPLICA_MANAGER_RESPOSNE = "";
 		UDPSender sender = new UDPSender(port, address);		
-		String udpMessage = "isAlive";		
+		String udpMessage = "isAlive";	
+
 		REPLICA_MANAGER_RESPOSNE = sender.sendMessage(udpMessage);	// UDP response from replica manager will be received here
-		
 		if(!REPLICA_MANAGER_RESPOSNE.equals(rmId) || REPLICA_MANAGER_RESPOSNE.isEmpty()) {
 			
 			rm.revoverReplicaManager(rmId);
