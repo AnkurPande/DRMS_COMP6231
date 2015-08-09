@@ -51,7 +51,7 @@ public class UDPSender {
 			byte[] buffer = new byte[1000];
 			DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
 			socket.receive(receivedPacket);
-			
+			 
 			String result = new String(receivedPacket.getData());
 			
 			return result.trim();

@@ -44,7 +44,7 @@ public class ReplicaManager implements Runnable {
 		System.out.println("fuck");
 	}
 	
-	
+	 
 	@Override
 	public void run()
 	{
