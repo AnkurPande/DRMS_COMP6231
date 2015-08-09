@@ -45,6 +45,8 @@ public class UDPSender {
 			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
 			socket.send(sendPacket);
 			
+			socket.setSoTimeout(30);
+			
 			byte[] buffer = new byte[1000];
 			DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
 			socket.receive(receivedPacket);

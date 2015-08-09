@@ -1,9 +1,16 @@
 package Replica_Manager;
 
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import frontend.ConstantValue;
+import frontend.FrontEnd;
+import frontend.Request;
+import frontend.FrontEnd.SequenceNumberChecker;
 import server.UDPSender;
 
 public class HeartBeatDispatcher extends Thread  {
@@ -130,12 +137,14 @@ public class HeartBeatDispatcher extends Thread  {
 		UDPSender sender = new UDPSender(port, address);		
 		String udpMessage = "isAlive";	
 
-		REPLICA_MANAGER_RESPOSNE = sender.sendMessage(udpMessage);	// UDP response from replica manager will be received here
-		if(!REPLICA_MANAGER_RESPOSNE.equals(rmId) || REPLICA_MANAGER_RESPOSNE.isEmpty()) {
+		try {
+			REPLICA_MANAGER_RESPOSNE = sender.sendMessage(udpMessage);
+		} catch (SocketTimeoutException e) {
 			
 			rm.revoverReplicaManager(rmId);
-		}
 			
+		}	
+	
 	}
 	
 	
@@ -149,13 +158,13 @@ public class HeartBeatDispatcher extends Thread  {
 		String REPLICA_RESPOSNE = "";
 		UDPSender sender = new UDPSender(port, address);		
 		String udpMessage = "isAlive";		
-		REPLICA_RESPOSNE = sender.sendMessage(udpMessage);	// UDP response from replica will be received here			
-		
-		if(!REPLICA_RESPOSNE.equals(rId) || REPLICA_RESPOSNE.isEmpty()) {
-			
+		try {
+			REPLICA_RESPOSNE = sender.sendMessage(udpMessage);
+		} catch (SocketTimeoutException e) {
 			rm.restartReplica();
-			
-		}
+		}			
+		
+		
 	}
 	 
 	
@@ -172,4 +181,34 @@ public class HeartBeatDispatcher extends Thread  {
 	public void setRm(ReplicaManager rm) {
 		this.rm = rm;
 	}
+	
+	
+	
+	/*
+	 *This class handle the recovery of Replica Manager and replica
+	 */
+	public class RecoverOperations extends TimerTask {
+		
+		ReplicaManager rm;
+		private String rid;
+		private String category;
+		
+		public RecoverOperations(ReplicaManager rm, String rmId, String category) {
+			this.rm = rm;
+			this.rid = rmId;
+			this.category = category;
+		}
+		
+		@Override
+		public void run() {
+			if(category.equals("RM"))
+				rm.revoverReplicaManager(this.rid);
+			else
+				rm.restartReplica();
+		}
+		
+	}
+	
 }
+
+

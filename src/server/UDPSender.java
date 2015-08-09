@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 /**
  * The Class UDPSender.
@@ -34,7 +35,7 @@ public class UDPSender {
 	 */
 	
 	
-	public String sendMessage(String message) {
+	public String sendMessage(String message) throws SocketTimeoutException {
 		DatagramSocket socket = null;
 
 		try {
@@ -44,6 +45,8 @@ public class UDPSender {
 			byte[] udpMessage         = requestData.getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
 			socket.send(sendPacket);
+			
+			socket.setSoTimeout(30);
 			
 			byte[] buffer = new byte[1000];
 			DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
@@ -55,8 +58,10 @@ public class UDPSender {
 			
 		} catch (SocketException e) {
 			System.out.println("Socket: " + e.getMessage());
+		
 		} catch (IOException e) {
-			System.out.println("IO: " + e.getMessage());
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
 			if (socket != null) socket.close();
 		}

@@ -39,7 +39,7 @@ public class HeartBeatListener extends Thread {
 				socket.send(responsePacket);
 			}
 		} catch (Exception e) {
-			System.out.println(e.getMessage()+ "fuck");
+			System.out.println(e.getMessage());
 		} finally {
 			if (socket != null) socket.close();
 		}
