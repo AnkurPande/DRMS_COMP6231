@@ -1,51 +1,28 @@
 package Replica_Manager;
 
-import server.UDPSender;
-import server.UDPSocket;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.HashMap;
 
 public class ReplicaManager implements Runnable {
 		
-	public String CURRENT_RM_ID = "1";
-	
-	HashMap<Integer, Integer> rmPorts = new HashMap<Integer, Integer>();
-	HashMap<Integer, String> rmIps = new HashMap<Integer, String>();
+	public String CURRENT_RM_ID;
+	public int CURRENT_RM_PORT;
+	public String CURRENT_RM_IP;
 
 	
 	/* CONSTRUCTOR */
-	ReplicaManager() {
-		
-		this.replicaManagerValues();
+	ReplicaManager(String RmID, int RmPort, String RmIP) {
+		this.CURRENT_RM_ID = RmID;
+		this.CURRENT_RM_PORT = RmPort;
+		this.CURRENT_RM_IP = RmIP;
 	}
 	
 	
 	@Override
 	public void run()
 	{
-		startHeartBeatProcess();
 		handleHeartBeatResponse();
-	}
-	
-	
-	/**
-	 * This method will dump replica managers ports and IP values in hashmaps
-	 *
-	 * @param nothing
-	 * @return nothing
-	 */
-	private void replicaManagerValues()
-	{
-		rmPorts.put(1, 5001);
-		rmPorts.put(2, 5002);
-		rmPorts.put(3, 5003);
-		
-		rmIps.put(1, "localhost");
-		rmIps.put(2, "localhost");
-		rmIps.put(3, "localhost");
 	}
 	
 	
@@ -58,20 +35,7 @@ public class ReplicaManager implements Runnable {
 	public String getReplicaManagerID() {
 		return this.CURRENT_RM_ID;		
 	}
-	
-	
-	/**
-	 * This method will start a thread to send heart beat messages to Replica Managers
-	 *
-	 * @param 
-	 * @return nothing
-	 */
-	public void startHeartBeatProcess()	{
-		HeartBeatDispatcher dispatcher = new HeartBeatDispatcher(this, this.rmPorts, this.rmIps);
-		Thread t = new Thread(dispatcher);
-		t.start();
-	}
-	
+		
 	
 	/**
 	 * This method will receive a response from heart beat response and return replica manager ID
@@ -84,7 +48,7 @@ public class ReplicaManager implements Runnable {
 		String responseMessageString = "";
 		
 		try {
-			socket = new DatagramSocket(rmPorts.get(1), InetAddress.getByName(rmIps.get(1)));		
+			socket = new DatagramSocket(this.CURRENT_RM_PORT, InetAddress.getByName(this.CURRENT_RM_IP));		
 			byte[] buffer = new byte[1000];
 			
 			while(true) {
@@ -107,16 +71,19 @@ public class ReplicaManager implements Runnable {
 	}
 	
 	
-	/**
-	 * This method will recover a dead replica manager.
-	 *
-	 * @param RmID: Replica Manager ID
-	 * @return a boolean indicate success or not
-	 */
-	public boolean recoverReplicaManager(int RmID)
+	public static void main(String [] args)
 	{
-		return true;
+		ReplicaManager r1 = new ReplicaManager("1", 5001, "localhost");
+		Thread t1 = new Thread(r1);
+		t1.run();
 		
+		ReplicaManager r2 = new ReplicaManager("2", 5002, "localhost");
+		Thread t2 = new Thread(r2);
+		t2.run();	
+		
+		ReplicaManager r3 = new ReplicaManager("3", 5003, "localhost");
+		Thread t3 = new Thread(r3);
+		t3.run();	
 	}
 	
 }
