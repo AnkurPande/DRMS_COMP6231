@@ -18,6 +18,7 @@ public class LibraryServerInfo {
 	
 	private int heartBeatreplyPort;
 	
+	
 	/**
 	 * Instantiates a new library server info.
 	 *
