@@ -1,5 +1,9 @@
 package frontend;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -213,12 +217,21 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 			
 			currentRequest.setRequestID(requestID);;
 			
-			for(Map.Entry<Integer, RMAddressAndPort> info: infoOfRM.entrySet()) {
+			
+			
+			try {
+				MulticastSocket multicaster = new MulticastSocket();
 				
-				UDPSender sender = new UDPSender(info.getValue().rmPort,info.getValue().rmIpAddress);
-				sender.sendMessage(ConstantValue.SEND_REQUEST + "," +currentRequest.getRequestID() + "," + currentRequest.getRequestCategory()
-								+ ","+ currentRequest.getRequestParameters());
+				String requestData = ConstantValue.SEND_REQUEST + "," +currentRequest.getRequestID() + "," + currentRequest.getRequestCategory()+ ","+ currentRequest.getRequestParameters();
+				byte[] udpMessage = requestData.getBytes();
+				DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, InetAddress.getByName(""), 4001 );
+				multicaster.send(sendPacket);
+				multicaster.close();
 				
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			
 			currentRequest.setRequestStatus(ConstantValue.WAIT_FOR_RESULT);
