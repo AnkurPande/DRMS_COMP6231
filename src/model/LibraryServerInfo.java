@@ -5,19 +5,26 @@ package model;
  */
 public class LibraryServerInfo {
 	
+	/* Replica ID */
 	private int replicaID;
-	/** The port of udp. */
+	
+	/* The port of udp. */
 	private int portOfUDP;
 	
-	/** The server name. */
+	/* The Replica name. */
 	private String serverName;
 	
+	/* The Replica IP Address*/
 	private String ipAddress;
 	
+	/*The server heart beat listen port */
 	private int heartbeatPort;
 	
-	private int heartBeatreplyPort;
+	/* Port of Replica Manager of this replica*/
+	private int rmPort;
 	
+	/*IP Address of Replica Manager of this Replica*/
+	private String rmIpAddress;
 	
 	/**
 	 * Instantiates a new library server info.
@@ -25,15 +32,18 @@ public class LibraryServerInfo {
 	 * @param name the name
 	 * @param port the port
 	 */
-	public LibraryServerInfo(int replicaID, String name, int port, String inetAddress,int heartbeat,int heartbeatreplyport) {
+	public LibraryServerInfo(int replicaID, String name, int port, String inetAddress,int heartbeat,int rmport, String rmIpAddress) {
 		this.replicaID = replicaID;
 		this.serverName = name;
 		this.portOfUDP = port;
 		this.setIpAddress(inetAddress);
 		this.heartbeatPort = heartbeat;
-		this.heartBeatreplyPort = heartbeatreplyport;
+		this.rmPort = rmport;
+		this.rmIpAddress = rmIpAddress;
 	}
 	
+	
+	//-------------------------------Getters and Setters---------------------------------------//
 	
 	/**
 	 * Instantiates a new library server info.
@@ -96,17 +106,6 @@ public class LibraryServerInfo {
 		this.heartbeatPort = heartbeatPort;
 	}
 
-
-	public int getHeartBeatreplyPort() {
-		return heartBeatreplyPort;
-	}
-
-
-	public void setHeartBeatreplyPort(int heartBeatreplyPort) {
-		this.heartBeatreplyPort = heartBeatreplyPort;
-	}
-
-
 	public int getReplicaID() {
 		return replicaID;
 	}
@@ -114,6 +113,26 @@ public class LibraryServerInfo {
 
 	public void setReplicaID(int replicaID) {
 		this.replicaID = replicaID;
+	}
+
+
+	public int getRmPort() {
+		return rmPort;
+	}
+
+
+	public void setRmPort(int rmPort) {
+		this.rmPort = rmPort;
+	}
+
+
+	public String getRmIpAddress() {
+		return rmIpAddress;
+	}
+
+
+	public void setRmIpAddress(String rmIpAddress) {
+		this.rmIpAddress = rmIpAddress;
 	}
 
 	
