@@ -1,68 +1,49 @@
 package replica;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-
-
+import udp.UDPReciever;
 import udp.UDPSender;
 
 public class Heartbeat extends Thread{
 
 private LibraryServerReplica server;
 	
-	private int heartBeatPort ;
-	private int heartBeatReplyPort;
-	
-	public int getHeartBeatPort() {
-		return heartBeatPort;
-	}
-	public void setHeartBeatPort(int heartBeatPort) {
-		this.heartBeatPort = heartBeatPort;
-	}
+	//--------------------------------------------Constructor------------------------------------------------------------------//
 	
 	public Heartbeat(LibraryServerReplica server) {
 		this.server = server;
-		this.heartBeatPort = server.getHeartBeatListenPort();
-		this.heartBeatReplyPort = server.getHeartBeatReplyPort();
 	}
+	
+	//-----------------------------------------------Run-----------------------------------------------------------------------//
+	
 	@Override
 	public void run() {
-		DatagramSocket socket = null;
-		String responseMessageString = "";
-		UDPSender heartBeatSender = null;
+		String responseMessageString = null;
+		UDPSender heartBeatSender = null ;
+		UDPReciever heartBeatReciever = null;
 		try {
 			
-			
-			//Initialize socket to receive response
-			socket = new DatagramSocket(this.getHeartBeatPort(), InetAddress.getByName(server.getIpAddress()));
-			byte[] buffer = new byte[1000];
-			
-			while(true){
-				DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
-				socket.receive(requestPacket);
+			//Initialize UDPSender
+			heartBeatSender = new UDPSender(server.getRmPort(),server.getRmIpAddress());
 				
-				byte[] message = requestPacket.getData();
-				String receivedMessageString = new String(message).trim();
+			//Initialize socket to receive response
+			heartBeatReciever = new UDPReciever(server.getIpAddress(),server.getHeartBeatListenPort());		
+			while(true){
+					
+				String receivedMessageString = heartBeatReciever.recieveRequest();
 				
 				String[] requestParts = receivedMessageString.split(",");
 												
-				if(requestParts[1].equals("replica")) {
-					String heartBeatMessage = "True,"+server.getReplicaID();
-					heartBeatSender = new UDPSender();
-					heartBeatSender.setAddress(requestPacket.getAddress());
-					heartBeatSender.setTargetPort(this.heartBeatReplyPort);
-					heartBeatSender.sendHeartBeat(heartBeatMessage);
+				if(requestParts[1].equals("isAlive")) {
+					responseMessageString = "True,"+server.getReplicaID();
+					heartBeatSender.sendOnly(responseMessageString);
 				}
-							
 			}
-			
 			
 		} catch (Exception e) {
 			System.out.println("UDP Exception");
-		} finally {
-			if (socket != null) socket.close();
+		}
+		finally{
+			heartBeatReciever.close();
 		}
 	}
-	
 }
