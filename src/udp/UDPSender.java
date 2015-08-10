@@ -15,7 +15,6 @@ public class UDPSender {
 	
 	private String targetAddress;
 	
-	private InetAddress address;
 	/**
 	 * Instantiates a new UDP sender.
 	 *
@@ -48,8 +47,6 @@ public class UDPSender {
 			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
 			socket.send(sendPacket);
 			
-			socket.setSoTimeout(30);
-			
 			byte[] buffer = new byte[1000];
 			DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
 			socket.receive(receivedPacket);
@@ -67,29 +64,7 @@ public class UDPSender {
 		}
 		return null;
 	}
-	
-	public void sendHeartBeat(String message) {
-		DatagramSocket socket = null;
-
-		try {
-			socket                    = new DatagramSocket();
-			InetAddress host          = this.getAddress();
-			String requestData 		  = message;
-			byte[] udpMessage         = requestData.getBytes();
-			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
-			socket.send(sendPacket);
-			
-		} catch (SocketException e) {
-			System.out.println("Socket: " + e.getMessage());
-		} catch (IOException e) {
-			System.out.println("IO: " + e.getMessage());
-		} finally {
-			if (socket != null) socket.close();
-		}
 		
-	}
-	
-	
 	public void sendOnly(String message) {
 		DatagramSocket socket = null;
 		
@@ -106,6 +81,9 @@ public class UDPSender {
 			socket.close();
 		}
 	}
+	
+	//--------------------------------------------Getters & Setters -----------------------------------------------------------//
+	
 	/**
 	 * Gets the target port.
 	 *
@@ -142,11 +120,4 @@ public class UDPSender {
 		this.targetAddress = targetAddress;
 	}
 
-	public InetAddress getAddress() {
-		return address;
-	}
-
-	public void setAddress(InetAddress address) {
-		this.address = address;
-	}
 }
