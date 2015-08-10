@@ -24,15 +24,15 @@ public class UDPReciever {
 		
 		this.buffer			= 	new byte[length];
 		this.socket			= 	new DatagramSocket(this.port,this.host);
-		this.requestPacket 		= 	new DatagramPacket(buffer,buffer.length);
+		this.requestPacket 	= 	new DatagramPacket(buffer,buffer.length);
 	}
 
 	public String recieveRequest() {
-		String response = null;
+		String response 	=	null;
 		try {
 			this.socket.receive(this.requestPacket);
-			response = new String(this.requestPacket.getData());
-			response = response.trim();
+			response 		= 	new String(this.requestPacket.getData());
+			response 		= 	response.trim();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -41,8 +41,8 @@ public class UDPReciever {
 	}
 	
 	public void sendResponse(String response) throws IOException{
-		buffer 					= response.getBytes();
-		this.responsePacket 	= new DatagramPacket(buffer,buffer.length, requestPacket.getAddress(), requestPacket.getPort());
+		buffer 				= response.getBytes();
+		this.responsePacket = new DatagramPacket(buffer,buffer.length, requestPacket.getAddress(), requestPacket.getPort());
 		this.socket.send(responsePacket);
 	}
 	

@@ -20,7 +20,6 @@ private LibraryServerReplica server;
 		String responseMessageString = null;
 		UDPReciever heartBeatReciever = null;
 		try {
-									
 			//Initialize socket to receive response
 			heartBeatReciever = new UDPReciever(server.getIpAddress(),server.getHeartBeatListenPort());		
 			while(true){
