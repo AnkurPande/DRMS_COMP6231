@@ -18,13 +18,9 @@ private LibraryServerReplica server;
 	@Override
 	public void run() {
 		String responseMessageString = null;
-		UDPSender heartBeatSender = null ;
 		UDPReciever heartBeatReciever = null;
 		try {
-			
-			//Initialize UDPSender
-			heartBeatSender = new UDPSender(server.getRmPort(),server.getRmIpAddress());
-				
+									
 			//Initialize socket to receive response
 			heartBeatReciever = new UDPReciever(server.getIpAddress(),server.getHeartBeatListenPort());		
 			while(true){
@@ -35,7 +31,7 @@ private LibraryServerReplica server;
 												
 				if(requestParts[1].equals("isAlive")) {
 					responseMessageString = "True,"+server.getReplicaID();
-					heartBeatSender.sendOnly(responseMessageString);
+					heartBeatReciever.sendResponse(responseMessageString);
 				}
 			}
 			
