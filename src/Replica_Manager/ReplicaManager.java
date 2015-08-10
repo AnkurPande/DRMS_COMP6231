@@ -36,12 +36,12 @@ public class ReplicaManager implements Runnable {
 	}
 	
 	public void restartReplica() {
-		
+		System.out.println("Restarting replica of RM: "+this.CURRENT_RM_ID);
 	}
 	
 	public void revoverReplicaManager(String rmID) {
 		
-		System.out.println("fuck");
+		System.out.println("Recovering replica manager: "+ rmID);
 	}
 	
 	 
