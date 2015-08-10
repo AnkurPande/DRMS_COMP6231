@@ -1,11 +1,7 @@
 package replica;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-
 import udp.UDPSender;
-
+import udp.UDPReciever;
 
 
 /**
@@ -26,41 +22,33 @@ public class ReplicaUDPListener extends Thread {
 	}
 	@Override
 	public void run() {
-		DatagramSocket socket = null;
 		String responseMessageString = "";
 		UDPSender frontEndSender = null;
-		
+		UDPReciever requestReciever = null;
 		try {
 			//Initialize sender to send response to front end
 			frontEndSender = new UDPSender(FRONTEND_UDP_PORT,FRONTEND_HOST);
 			
 			//Initialize socket to receive response
-			socket = new DatagramSocket(server.getPortOfUDP(), InetAddress.getByName(server.getIpAddress()));
-			byte[] buffer = new byte[1000];
-			
+			requestReciever = new UDPReciever(server.getIpAddress(),server.getPortOfUDP());
+						
 			while(true){
-				DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
-				socket.receive(requestPacket);
-				
-				byte[] message = requestPacket.getData();
-				String receivedMessageString = new String(message).trim();
+				String receivedMessageString = requestReciever.recieveRequest();
 				
 				String[] requestParts = receivedMessageString.split(",");
 				
-				if(requestParts.length == 2 ) {
-					//non return request
-					String numDays = requestParts[1].trim();
-					responseMessageString = server.checkNonRetuners(numDays);
+				String[] parameters = requestParts[3].split(" : ");
+				
+				if(requestParts[0] == "1"){
+					responseMessageString = "1,"+server.getReplicaID()+","+ requestParts[1]+",";
+					responseMessageString = responseMessageString + server.createAccount(parameters[0], parameters[1], parameters[2], parameters[3], parameters[4], parameters[5], parameters[6]);
 					frontEndSender.sendOnly(responseMessageString);
 				}
 			}
-			
-			
-			
 		} catch (Exception e) {
 			System.out.println("UDP Exception");
 		} finally {
-			if (socket != null) socket.close();
+			requestReciever.close();
 		}
 	}
 }
