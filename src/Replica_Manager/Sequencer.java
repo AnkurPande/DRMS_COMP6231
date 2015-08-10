@@ -224,7 +224,7 @@ public class Sequencer extends Thread{
 		DatagramSocket socket = null;
 		
 		try{
-			socket = new DatagramSocket(5002,InetAddress.getByName("address here"));
+			socket = new DatagramSocket(5002,InetAddress.getByName("localhost"));
 			
 			byte[] udpMessage = (message).getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, portNumber);
@@ -255,7 +255,7 @@ public class Sequencer extends Thread{
 		}
 		catch(IOException e)
 		{
-			System.out.println("IO: " + e.getMessage());
+			System.out.println("IOa: " + e.getMessage());
 		}
 	}
 	

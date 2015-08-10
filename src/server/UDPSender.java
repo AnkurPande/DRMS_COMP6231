@@ -35,7 +35,7 @@ public class UDPSender {
 	 */
 	
 	
-	public String sendMessage(String message) throws SocketTimeoutException {
+	public String sendMessage(String message) throws IOException {
 		DatagramSocket socket = null;
 
 		try {
@@ -59,9 +59,6 @@ public class UDPSender {
 		} catch (SocketException e) {
 			System.out.println("Socket: " + e.getMessage());
 		
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} finally {
 			if (socket != null) socket.close();
 		}
