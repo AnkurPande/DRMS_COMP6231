@@ -10,6 +10,7 @@ public class ReplicaManager implements Runnable {
 	private HeartBeatDispatcher dispatcher;
 	private HeartBeatListener listener;
 
+	private Sequencer sequencer;
 	
 	/* CONSTRUCTOR */
 	ReplicaManager(String RmID, int RmPort, String RmIP) {
@@ -63,7 +64,15 @@ public class ReplicaManager implements Runnable {
 	}
 		 
 	
-	
+	public void electNewCoordinator() {
+		
+		//Send multicast message to other sequencer for election 
+		//The other sequencer reply to this message with id
+		//decide which id is smaller, the smaller one is the sequencer
+		//Multicast result set sequncer
+		//Change current sequencer id to result
+		
+	}
 	
 	
 	
@@ -78,6 +87,18 @@ public class ReplicaManager implements Runnable {
 		t2.start();
 		
 		
+	}
+
+
+
+	public Sequencer getSequencer() {
+		return sequencer;
+	}
+
+
+
+	public void setSequencer(Sequencer sequencer) {
+		this.sequencer = sequencer;
 	}
 	
 }

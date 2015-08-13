@@ -14,7 +14,10 @@ public class Sequencer extends Thread{
 	
 	private int lastAgreedSequenceNumber;
 	private int lastProposedSequenceNumber;
-	private boolean isCordinator;
+	
+	private boolean coordinator;
+	private int currentCoordinator;
+	
 	//private boolean isSequenceAggreed;
 	private int portNumber;
 	private int replicaPortNumber;
@@ -30,7 +33,7 @@ public class Sequencer extends Thread{
 	/**
 	 * Sequencer constructor.
 	 *
-	 * @param isCordinator (True/False)
+	 * @param coordinator (True/False)
 	 * @param the sequencer port for listening for incoming messages and sending messages
 	 * @param the replica port
 	 * @param the sequencers group IP address
@@ -43,7 +46,7 @@ public class Sequencer extends Thread{
 		proposedNumbers = new HashMap<Integer,Vector<Integer>>();
 		requests = new HashMap<Integer,String>();
 		lastProposedSequenceNumber = 0;
-		isCordinator = cordinator;
+		coordinator = cordinator;
 		//isSequenceAggreed = false;
 		portNumber = port;
 		groupAddress = address;
@@ -91,7 +94,7 @@ public class Sequencer extends Thread{
 					//Isis for agreeing on the sequence number
 					if(request[0].equals("vote"))
 					{
-						if (!isCordinator)
+						if (!coordinator)
 						{
 							this.lastProposedSequenceNumber = Math.max(this.lastAgreedSequenceNumber,this.lastProposedSequenceNumber) + 1;
 							String reply = "propose,"+ request[1] + "," + lastProposedSequenceNumber;
@@ -101,7 +104,7 @@ public class Sequencer extends Thread{
 					
 					if (request[0].equals("propose"))
 					{
-						if (isCordinator)
+						if (coordinator)
 						{
 							if (lastAgreedSequenceNumber < Integer.parseInt(request[2]))
 							{
@@ -123,7 +126,7 @@ public class Sequencer extends Thread{
 					{
 						this.lastAgreedSequenceNumber = Integer.parseInt(request[2]);
 						
-						if(isCordinator)
+						if(coordinator)
 						{
 							String reply = ""+ request[1] + "," + lastAgreedSequenceNumber;
 							replyToFE(reply);
@@ -164,7 +167,7 @@ public class Sequencer extends Thread{
 					
 					if (request[0] == "1")
 					{
-						if (isCordinator)
+						if (coordinator)
 						{
 							requests.put(Integer.parseInt(request[1]), result);
 							Vector<Integer> vec = new Vector<>();
@@ -259,4 +262,20 @@ public class Sequencer extends Thread{
 		}
 	}
 	
+	
+	public boolean isCoordinator() {
+		return coordinator;
+	}
+
+	public void setCoordinator(boolean coordinator) {
+		this.coordinator = coordinator;
+	}
+
+	public int getCurrentCoordinator() {
+		return currentCoordinator;
+	}
+
+	public void setCurrentCoordinator(int currentCoordinator) {
+		this.currentCoordinator = currentCoordinator;
+	}
 }

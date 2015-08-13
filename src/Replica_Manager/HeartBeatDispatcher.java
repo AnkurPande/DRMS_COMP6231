@@ -141,6 +141,11 @@ public class HeartBeatDispatcher extends Thread  {
 			}
 			
 		} catch (SocketTimeoutException e) {
+			
+			if(rm.getSequencer().getCurrentCoordinator() == Integer.parseInt(rmId)) {
+				rm.electNewCoordinator();
+			}
+			
 			rm.revoverReplicaManager(rmId);
 			
 		} catch (IOException e) {
