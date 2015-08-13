@@ -92,9 +92,9 @@ public class Sequencer extends Thread{
 				if (request.length == 3)
 				{
 					//Isis for agreeing on the sequence number
-					if(request[0].equals("vote"))
+					if(request[0].trim().equals("vote"))
 					{
-						if (!coordinator)
+						if (!isCoordinator())
 						{
 							this.lastProposedSequenceNumber = Math.max(this.lastAgreedSequenceNumber,this.lastProposedSequenceNumber) + 1;
 							String reply = "propose,"+ request[1] + "," + lastProposedSequenceNumber;
@@ -167,7 +167,7 @@ public class Sequencer extends Thread{
 					
 					if (request[0] == "1")
 					{
-						if (coordinator)
+						if (isCoordinator())
 						{
 							requests.put(Integer.parseInt(request[1]), result);
 							Vector<Integer> vec = new Vector<>();

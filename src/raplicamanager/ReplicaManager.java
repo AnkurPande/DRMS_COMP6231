@@ -1,5 +1,8 @@
 package raplicamanager;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 
 public class ReplicaManager implements Runnable {
 		
@@ -11,6 +14,12 @@ public class ReplicaManager implements Runnable {
 	private HeartBeatListener listener;
 
 	private Sequencer sequencer;
+	
+	private String replicaName;
+	
+	private Process replicaProcess;
+
+	
 	
 	/* CONSTRUCTOR */
 	ReplicaManager(String RmID, int RmPort, String RmIP) {
@@ -33,16 +42,54 @@ public class ReplicaManager implements Runnable {
 	
 	public void startReplica() {
 		
+		System.out.println("STARTING REPLICA " + replicaName);
+		ProcessBuilder pb = new ProcessBuilder();
+		String path = "./" + replicaName + ".jar";
+		pb.command("java", "-jar",  path);
+		pb.redirectError(Redirect.INHERIT);
+		pb.redirectOutput(Redirect.INHERIT);
+		pb.directory(new File("./replicas/" + replicaName + "/"));
+		
+		try {
+			replicaProcess = pb.start();
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
 		
 	}
 	
 	public void restartReplica() {
-		System.out.println("Restarting replica of RM: "+this.CURRENT_RM_ID);
+		System.out.println("Restarting replica: "+this.CURRENT_RM_ID);
+		
+		if (replicaProcess != null) replicaProcess.destroy();
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		startReplica();
 	}
 	
 	public void revoverReplicaManager(String rmID) {
 		
 		System.out.println("Recovering replica manager: "+ rmID);
+		
+		ProcessBuilder pb = new ProcessBuilder();
+		String path = "./" + replicaName + ".jar";
+		pb.command("java", "-jar",  path);
+		pb.redirectError(Redirect.INHERIT);
+		pb.redirectOutput(Redirect.INHERIT);
+		pb.directory(new File("./replicas/" + replicaName + "/"));
+		
+		try {
+			replicaProcess = pb.start();
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+		
+		
 	}
 	
 	 
@@ -99,6 +146,30 @@ public class ReplicaManager implements Runnable {
 
 	public void setSequencer(Sequencer sequencer) {
 		this.sequencer = sequencer;
+	}
+
+
+
+	public String getReplicaName() {
+		return replicaName;
+	}
+
+
+
+	public void setReplicaName(String replicaName) {
+		this.replicaName = replicaName;
+	}
+
+
+
+	public Process getProcess() {
+		return replicaProcess;
+	}
+
+
+
+	public void setProcess(Process process) {
+		this.replicaProcess = process;
 	}
 	
 }
