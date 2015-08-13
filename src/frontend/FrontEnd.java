@@ -220,6 +220,7 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 			
 			
 			try {
+				
 				MulticastSocket multicaster = new MulticastSocket();
 				
 				String requestData = ConstantValue.SEND_REQUEST + "," +currentRequest.getRequestID() + "," + currentRequest.getRequestCategory()+ ","+ currentRequest.getRequestParameters();
@@ -230,7 +231,7 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 				
 				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 			

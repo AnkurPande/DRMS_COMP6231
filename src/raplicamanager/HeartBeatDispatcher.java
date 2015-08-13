@@ -1,4 +1,4 @@
-package Replica_Manager;
+package raplicamanager;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;

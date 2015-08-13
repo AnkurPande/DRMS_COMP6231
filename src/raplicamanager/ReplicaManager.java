@@ -1,4 +1,4 @@
-package Replica_Manager;
+package raplicamanager;
 
 
 public class ReplicaManager implements Runnable {
