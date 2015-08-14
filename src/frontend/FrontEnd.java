@@ -1,9 +1,5 @@
 package frontend;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -16,6 +12,7 @@ import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import udp.Multicaster;
 import udp.UDPSender;
 
 public class FrontEnd implements FrontEndInterface, Runnable {
@@ -217,24 +214,15 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 			
 			currentRequest.setRequestID(requestID);;
 			
+				
+			Multicaster multicaster = new Multicaster(0, "");
 			
+			String requestData = ConstantValue.SEND_REQUEST + "," +currentRequest.getRequestID() + "," + currentRequest.getRequestCategory()+ ","+ currentRequest.getRequestParameters();
 			
-			try {
-				
-				MulticastSocket multicaster = new MulticastSocket();
-				
-				String requestData = ConstantValue.SEND_REQUEST + "," +currentRequest.getRequestID() + "," + currentRequest.getRequestCategory()+ ","+ currentRequest.getRequestParameters();
-				byte[] udpMessage = requestData.getBytes();
-				DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, InetAddress.getByName(""), 4001 );
-				multicaster.send(sendPacket);
-				multicaster.close();
+			multicaster.sendMessage (requestData);
 				
 				
-			} catch (IOException e) {
-				
-				e.printStackTrace();
-			}
-			
+		
 			currentRequest.setRequestStatus(ConstantValue.WAIT_FOR_RESULT);
 			
 			Timer timer = new Timer();
