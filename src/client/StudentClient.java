@@ -1,8 +1,6 @@
 package client;
 
 import model.*;
-import server.*;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

@@ -36,7 +36,7 @@ public class UDPSender {
 	 * @param message the message
 	 * @return the string
 	 */
-	public String sendMessage(String message) {
+	public String sendMessage(String message) throws IOException {
 		DatagramSocket socket = null;
 
 		try {
@@ -47,18 +47,19 @@ public class UDPSender {
 			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
 			socket.send(sendPacket);
 			
+			socket.setSoTimeout(30);
+			
 			byte[] buffer = new byte[1000];
 			DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
 			socket.receive(receivedPacket);
-			
+			 
 			String result = new String(receivedPacket.getData());
 			
 			return result.trim();
 			
 		} catch (SocketException e) {
 			System.out.println("Socket: " + e.getMessage());
-		} catch (IOException e) {
-			System.out.println("IO: " + e.getMessage());
+		
 		} finally {
 			if (socket != null) socket.close();
 		}

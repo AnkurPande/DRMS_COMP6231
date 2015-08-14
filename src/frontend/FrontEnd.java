@@ -1,5 +1,6 @@
 package frontend;
 
+import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -199,7 +200,12 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 		
 		UDPSender sender = new UDPSender(rm.rmPort,rm.rmIpAddress);
 		
-		sender.sendMessage(ConstantValue.INFORM_RM_FAILURE +"," + i);
+		try {
+			sender.sendMessage(ConstantValue.INFORM_RM_FAILURE +"," + i);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	

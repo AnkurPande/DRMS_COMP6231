@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import model.Book;
+import model.LibraryServerInfo;
 import model.Student;
 import udp.UDPSender;
 
@@ -266,11 +267,18 @@ public class LibraryServerReplica implements Runnable{
 				UDPSender sender = new UDPSender(info.getKey(), info.getValue());
 				
 				
-				String resultFromOther = sender.sendMessage("0," + numDays);
+				String resultFromOther;
+				try {
+					resultFromOther = sender.sendMessage("0," + numDays);
+					finalResult.append(resultFromOther + "\n");
+
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				
 				
 					
-				finalResult.append(resultFromOther + "\n");
 				
 				
 			}
@@ -595,12 +603,12 @@ public class LibraryServerReplica implements Runnable{
 	public static void main(String args[]){
 		
 		LibraryServerInfo info1 = new LibraryServerInfo(1,
-														ConstantValue.CONCORDIA,
-														ConstantValue.COCORDIA_UDP_PORT,
-														ConstantValue.CONCORDIA_IP_ADDRESS,
-														ConstantValue.CONCORDIA_HEARTBEAT_PORT,
-														ConstantValue.COCORDIA_HEARTBEAT_RM_PORT,
-														ConstantValue.CONCORDIA_RM_IP_ADDRESS);
+														ConstantValue.REPLICA1,
+														ConstantValue.REPLICA1_UDP_PORT,
+														ConstantValue.REPLICA1_IP_ADDRESS,
+														ConstantValue.REPLICA1_HEARTBEAT_PORT,
+														ConstantValue.REPLICA1_HEARTBEAT_RM_PORT,
+														ConstantValue.REPLICA1_RM_IP_ADDRESS);
 		
 		
 		

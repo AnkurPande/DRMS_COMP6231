@@ -5,10 +5,9 @@ import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TimerTask;
 
-import server.UDPSender;
 import udp.Multicaster;
+import udp.UDPSender;
 
 public class HeartBeatDispatcher extends Thread  {
 
