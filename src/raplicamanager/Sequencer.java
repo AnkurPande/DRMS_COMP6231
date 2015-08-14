@@ -99,13 +99,13 @@ public class Sequencer extends Thread{
 					{
 						if(Integer.parseInt(request[1]) > sequencerID)
 						{
-							String message = "cordinator" + request[1];
+							String message = "cordinator," + request[1];
 							sendMessage(message, socketM);
 						}
 						
 						if (Integer.parseInt(request[1]) < sequencerID)
 						{
-							String message = "cordinator" + sequencerID;
+							String message = "cordinator," + sequencerID;
 							cordinator = true;
 							sendMessage(message, socketM);
 						}
