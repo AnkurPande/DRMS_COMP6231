@@ -1,5 +1,6 @@
 package raplicamanager;
 
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -14,10 +15,7 @@ public class Sequencer extends Thread{
 	
 	private int lastAgreedSequenceNumber;
 	private int lastProposedSequenceNumber;
-	
-	private boolean coordinator;
-	private int currentCoordinator;
-	
+	private boolean isCordinator;
 	//private boolean isSequenceAggreed;
 	private int portNumber;
 	private int replicaPortNumber;
@@ -33,7 +31,7 @@ public class Sequencer extends Thread{
 	/**
 	 * Sequencer constructor.
 	 *
-	 * @param coordinator (True/False)
+	 * @param isCordinator (True/False)
 	 * @param the sequencer port for listening for incoming messages and sending messages
 	 * @param the replica port
 	 * @param the sequencers group IP address
@@ -46,7 +44,7 @@ public class Sequencer extends Thread{
 		proposedNumbers = new HashMap<Integer,Vector<Integer>>();
 		requests = new HashMap<Integer,String>();
 		lastProposedSequenceNumber = 0;
-		coordinator = cordinator;
+		isCordinator = cordinator;
 		//isSequenceAggreed = false;
 		portNumber = port;
 		groupAddress = address;
@@ -86,25 +84,25 @@ public class Sequencer extends Thread{
 				DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
 				socketM.receive(receivedPacket);
 				
-				result = new String(receivedPacket.getData());
+				result = new String(receivedPacket.getData()).trim();
 				String[] request = result.split(","); 
 				
 				if (request.length == 3)
 				{
 					//Isis for agreeing on the sequence number
-					if(request[0].trim().equals("vote"))
+					if(request[0].equals("vote"))
 					{
-						if (!isCoordinator())
+						if (!isCordinator)
 						{
 							this.lastProposedSequenceNumber = Math.max(this.lastAgreedSequenceNumber,this.lastProposedSequenceNumber) + 1;
 							String reply = "propose,"+ request[1] + "," + lastProposedSequenceNumber;
-							sendMessage(reply);
+							sendMessage(reply,socketM);
 						}
 					}
 					
 					if (request[0].equals("propose"))
 					{
-						if (coordinator)
+						if (isCordinator)
 						{
 							if (lastAgreedSequenceNumber < Integer.parseInt(request[2]))
 							{
@@ -113,10 +111,10 @@ public class Sequencer extends Thread{
 								if (proposedNumbers.get(Integer.parseInt(request[1])).size() == 3)
 								{
 									int max = Math.max(Math.max(proposedNumbers.get(Integer.parseInt(request[1])).get(0), proposedNumbers.get(Integer.parseInt(request[1])).get(1)), proposedNumbers.get(Integer.parseInt(request[1])).get(2));
-									String reply = "agreed" + request[1] + "," + max;
-									sendMessage(reply);
-									//isSequenceAggreed = true;
-									proposedNumbers.clear();
+								
+									String reply = "agreed," + request[1] + "," + max;
+									sendMessage(reply,socketM);
+									System.out.println("agreed sequence number ("+max+") dispatched for request: " + request[1]);
 								}
 							}
 						}
@@ -125,37 +123,27 @@ public class Sequencer extends Thread{
 					if(request[0].equals("agreed"))
 					{
 						this.lastAgreedSequenceNumber = Integer.parseInt(request[2]);
-						
-						if(coordinator)
+
+						if(isCordinator)
 						{
 							String reply = ""+ request[1] + "," + lastAgreedSequenceNumber;
 							replyToFE(reply);
-							
-							String[] aRequest = requests.get(request[1]).split(",");
-							
-							String aMessage = "1,"+ lastAgreedSequenceNumber + aRequest[2] + aRequest[3];
-							
-							
-							// Transfers the request to the replica
-							DatagramSocket socket = new DatagramSocket(replicaPortNumber,replicaHost);
-							
-							byte[] udpMessage = aMessage.getBytes();
-							DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, replicaHost, replicaPortNumber);
-							socket.send(sendPacket);
-							
-					
-							if (socket != null) socket.close();
-							
-							requests.remove(request[1]);
-							proposedNumbers.remove(request[1]);
-							
+							System.out.println("FE got: sequence number("+lastAgreedSequenceNumber+") for request " + request[1]);
+							proposedNumbers.remove(Integer.parseInt(request[1]));
 							
 						}
-						else
-						{
-							lastAgreedSequenceNumber = Integer.parseInt(request[2]);
-							//isSequenceAggreed = true;
-						}
+						
+						String[] aRequest = requests.get(Integer.parseInt(request[1])).split(",");
+						
+						String aMessage = "1,"+ lastAgreedSequenceNumber + aRequest[2] + aRequest[3];
+						
+						// Transfers the request to the replica
+						transferRequestToReplica(aMessage);
+						
+						System.out.println("replica got request("+request[1]+") with sequence: " + lastAgreedSequenceNumber);
+						
+						requests.remove(Integer.parseInt(request[1]));
+							
 					}
 					
 				}
@@ -163,24 +151,24 @@ public class Sequencer extends Thread{
 				if (request.length > 3)
 				{
 					//request form the front end
-					//isSequenceAggreed = false;
 					
-					if (request[0] == "1")
+					if (request[0].equals("1"))
 					{
-						if (isCoordinator())
+						requests.put(Integer.parseInt(request[1]), result);
+						System.out.println(result+"FE");
+						
+						if (isCordinator)
 						{
-							requests.put(Integer.parseInt(request[1]), result);
 							Vector<Integer> vec = new Vector<>();
 							proposedNumbers.put(Integer.parseInt(request[1]), vec);
 							
 							lastProposedSequenceNumber = lastProposedSequenceNumber + 1;
 							String vote = "vote," + request[1] + "," + lastProposedSequenceNumber;
-							sendMessage(vote);
+							sendMessage(vote,socketM);
 							proposedNumbers.get(Integer.parseInt(request[1])).addElement(lastProposedSequenceNumber);
 						}
 					}
 					
-		
 				}
 				
 			}
@@ -201,25 +189,19 @@ public class Sequencer extends Thread{
 	 * @param message the message
 	 */
 	
-	public void sendMessage(String message)
+	public void sendMessage(String message, MulticastSocket mySocket)
 	{
-		socketM = null;
-
 		try {
-			socketM = new MulticastSocket(portNumber);
-			socketM.joinGroup(host);
 			
 			byte[] udpMessage = (message).getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, portNumber);
-			socketM.send(sendPacket);
+			mySocket.send(sendPacket);
 			
 		} catch (SocketException e) {
 			System.out.println("Socket: " + e.getMessage());
 		} catch (IOException e) {
 			System.out.println("IO: " + e.getMessage());
-		} finally {
-			if (socketM != null) socketM.close();
-		}
+		} 
 	}
 	
 	public void replyToFE(String message)
@@ -242,19 +224,38 @@ public class Sequencer extends Thread{
 		}
 	}
 	
+	public void transferRequestToReplica(String message)
+	{
+		DatagramSocket socket = null;
+		
+		try{
+			socket = new DatagramSocket(replicaPortNumber,replicaHost);
+			
+			byte[] udpMessage = (message).getBytes();
+			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, portNumber);
+			socket.send(sendPacket);
+			
+		} catch (SocketException e) {
+			System.out.println("Socket: " + e.getMessage());
+		} catch (IOException e) {
+			System.out.println("IO: " + e.getMessage());
+		} finally {
+			if (socket != null) socket.close();
+		}
+	}
+	
 	public static void main(String[] args)
 	{
 		try{
 			
 			Sequencer s1 = new Sequencer(true, 4001,8001,"234.1.2.1", "localhost");
-			Sequencer s2 = new Sequencer(false, 4002,8002,"234.1.2.1", "localhost");
-			Sequencer s3 = new Sequencer(false, 4003,8003,"234.1.2.1", "localhost");
+			Sequencer s2 = new Sequencer(false, 4001,8002,"234.1.2.1", "localhost");
+			Sequencer s3 = new Sequencer(false, 4001,8003,"234.1.2.1", "localhost");
 			
 			s1.start();
 			s2.start();
 			s3.start();
 			
-			System.out.println("I'm here!!!");
 		}
 		catch(IOException e)
 		{
@@ -262,20 +263,5 @@ public class Sequencer extends Thread{
 		}
 	}
 	
-	
-	public boolean isCoordinator() {
-		return coordinator;
-	}
-
-	public void setCoordinator(boolean coordinator) {
-		this.coordinator = coordinator;
-	}
-
-	public int getCurrentCoordinator() {
-		return currentCoordinator;
-	}
-
-	public void setCurrentCoordinator(int currentCoordinator) {
-		this.currentCoordinator = currentCoordinator;
-	}
 }
+
