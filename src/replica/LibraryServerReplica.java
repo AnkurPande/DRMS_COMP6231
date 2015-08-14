@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import model.Book;
-import model.LibraryServerInfo;
 import model.Student;
 import udp.UDPSender;
 
@@ -57,53 +56,53 @@ public class LibraryServerReplica implements Runnable{
 		
 		
 		//Institution names
-		public static final String CONCORDIA = "Concordia";
+		public static final String REPLICA1 = "Replica1";
 		
-		public static final String MCGILL = "McGill";
+		public static final String REPLICA2 = "Replica2";
 		
-		public static final String UDEM = "UdeM";
+		public static final String REPLICA3 = "Replica3";
 		
 		//Default Duration
 		public static final int DEFAULT_DURATION = 14;
 		
 		//UDP Ports to listen incoming request
-		public static final int COCORDIA_UDP_PORT = 4445;
+		public static final int REPLICA1_UDP_PORT = 4445;
 		
-		public static final int MCGILL_UDP_PORT = 4447;
+		public static final int REPLICA2_UDP_PORT = 4447;
 		
-		public static final int UDEM_UDP_PORT = 4449;
+		public static final int REPLICA3_UDP_PORT = 4449;
 		
 		//heart beat port for incoming heart beat request
 		
-		public static final int CONCORDIA_HEARTBEAT_PORT = 7001;
+		public static final int REPLICA1_HEARTBEAT_PORT = 7001;
 		
-		public static final int MCGILL_HEARTBEAT_PORT = 7002;
+		public static final int REPLICA2_HEARTBEAT_PORT = 7002;
 		
-		public static final int UDEM_HEARTBEAT_PORT = 7003;
+		public static final int REPLICA3_HEARTBEAT_PORT = 7003;
 		
 		//Heart beat reply port (RM ports where the heart beat response is forwarded)
 		
-		public static final int COCORDIA_HEARTBEAT_RM_PORT = 9001;
+		public static final int REPLICA1_HEARTBEAT_RM_PORT = 9001;
 		
-		public static final int MCGILL_HEARTBEAT_RM_PORT = 9002;
+		public static final int REPLICA2_HEARTBEAT_RM_PORT = 9002;
 		
-		public static final int UDEM_HEARTBEAT_RM_PORT = 9003;
+		public static final int REPLICA3_HEARTBEAT_RM_PORT = 9003;
 		
 		//IP ADDRESS OF REPLICA
 		
-		public static final String CONCORDIA_IP_ADDRESS = "localhost";
+		public static final String REPLICA1_IP_ADDRESS = "localhost";
 		
-		public static final String MCGILL_IP_ADDRESS = "localhost";
+		public static final String REPLICA2_IP_ADDRESS = "localhost";
 		
-		public static final String UDEM_IP_ADDRESS = "localhost";
+		public static final String REPLICA3_IP_ADDRESS = "localhost";
 		
 		//IP ADDRESS OF RMS
 		
-		public static final String CONCORDIA_RM_IP_ADDRESS = "localhost";
+		public static final String REPLICA1_RM_IP_ADDRESS = "localhost";
 		
-		public static final String MCGILL_RM_IP_ADDRESS = "localhost";
+		public static final String REPLICA2_RM_IP_ADDRESS = "localhost";
 		
-		public static final String UDEM_RM_IP_ADDRESS = "localhost";
+		public static final String REPLICA3_RM_IP_ADDRESS = "localhost";
 		
 		public static final String TRUE = "true";
 		
@@ -126,10 +125,6 @@ public class LibraryServerReplica implements Runnable{
 		this.rmPort = info.getRmPort();
 		this.rmIpAddress = info.getRmIpAddress();
 		
-		//Initialize list of UDPPorts
-		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.CONCORDIA_IP_ADDRESS);
-		this.UDPInfo.put(ConstantValue.MCGILL_UDP_PORT, ConstantValue.MCGILL_IP_ADDRESS);
-		this.UDPInfo.put(ConstantValue.UDEM_UDP_PORT, ConstantValue.UDEM_IP_ADDRESS);
 		
 		
 		initializeTestingData();
@@ -150,10 +145,7 @@ public class LibraryServerReplica implements Runnable{
 	 */
 	public LibraryServerReplica() {
 			
-		//Initialize list of UDPPorts
-		this.UDPInfo.put(ConstantValue.COCORDIA_UDP_PORT, ConstantValue.CONCORDIA_IP_ADDRESS);
-		this.UDPInfo.put(ConstantValue.MCGILL_UDP_PORT, ConstantValue.MCGILL_IP_ADDRESS);
-		this.UDPInfo.put(ConstantValue.UDEM_UDP_PORT, ConstantValue.UDEM_IP_ADDRESS);
+		
 		
 	}
 	
@@ -610,73 +602,31 @@ public class LibraryServerReplica implements Runnable{
 														ConstantValue.COCORDIA_HEARTBEAT_RM_PORT,
 														ConstantValue.CONCORDIA_RM_IP_ADDRESS);
 		
-		LibraryServerInfo info2 = new LibraryServerInfo(2,
-														ConstantValue.MCGILL,
-														ConstantValue.MCGILL_UDP_PORT,
-														ConstantValue.MCGILL_IP_ADDRESS,
-														ConstantValue.MCGILL_HEARTBEAT_PORT,
-														ConstantValue.MCGILL_HEARTBEAT_RM_PORT,
-														ConstantValue.MCGILL_RM_IP_ADDRESS);
 		
-		LibraryServerInfo info3 = new LibraryServerInfo(3,
-														ConstantValue.UDEM,
-														ConstantValue.UDEM_UDP_PORT,
-														ConstantValue.UDEM_IP_ADDRESS,
-														ConstantValue.UDEM_HEARTBEAT_PORT,
-														ConstantValue.UDEM_HEARTBEAT_RM_PORT,
-														ConstantValue.UDEM_RM_IP_ADDRESS);
 		
 		LibraryServerReplica concordia = new LibraryServerReplica(info1);
 		concordia.initializeTestingData();
 		
-		LibraryServerReplica mcgill = new LibraryServerReplica(info2);
-		mcgill.initializeTestingData();
 		
-		LibraryServerReplica udem = new LibraryServerReplica(info3);
-		udem.initializeTestingData();
-		
-		Thread library1 = new Thread(concordia);
-		library1.start();
+		Thread library = new Thread(concordia);
+		library.start();
 			
-		Thread library2 = new Thread(mcgill);
-		library2.start();
-				
-		Thread library3 = new Thread(udem);
-		library3.start();
+		
 		
 	}
 
 	//------------------Initialize Testing Data-------------------------------------------------------------------------------//
 	
 	public void initializeTestingData() {
-		if(this.nameOfServer.equalsIgnoreCase("Concordia")) {
-			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "12345678", "Concordia");
-			this.addStudent(student);
-			student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "Concordia");
-			this.addStudent(student);
-			student = new Student("Ccc","Ddd", "dd@dddd.dd","5141111111", "cccddd", "xxxxx", "Concordia");
-			this.addStudent(student);
-		}else if (this.nameOfServer.equalsIgnoreCase("McGill")) { 
-			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "12345678", "McGill");
-			this.addStudent(student);
-			student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "McGill");
-			this.addStudent(student);
-			student = new Student("Ccc","Ddd", "dd@dddd.dd","5141111111", "cccddd", "xxxxx", "McGill");
-			this.addStudent(student);
-		}else if (this.nameOfServer.equalsIgnoreCase("UdeM")) {
-			Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "12345678", "UdeM");
-			this.addStudent(student);
-			student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "UdeM");
-			this.addStudent(student);
-			student = new Student("Ccc","Ddd", "dd@dddd.dd","5141111111", "cccddd", "xxxxx", "UdeM");
-			this.addStudent(student);
-		}
+		Student student = new Student("Aaa", "Bbb", "cc@cccc.cc", "51411111111", "aaabbb", "12345678", "Concordia");
+		this.addStudent(student);
+		student = new Student("Bbb","Ccc", "dd@dddd.dd","5141111111", "bbbccc", "xxxxx", "Concordia");
+		this.addStudent(student);
+		student = new Student("Ccc","Ddd", "dd@dddd.dd","5141111111", "cccddd", "xxxxx", "Concordia");
+		this.addStudent(student);
 		
-		if(this.getNameOfServer().equalsIgnoreCase("McGill")) {
-			Book book = new Book("testbook", "testauthor", Integer.MAX_VALUE);
-			this.getBookshelf().add(book);
-			
-		}
+		
+		
 		Book book = new Book("AAA","BBB",Integer.MAX_VALUE);
 		getBookshelf().add(book);
 		book = new Book("CCC","DDD",Integer.MAX_VALUE);
