@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 
+import udp.Multicaster;
+
 public class ReplicaManager implements Runnable {
 		
 	public String CURRENT_RM_ID;
@@ -18,6 +20,7 @@ public class ReplicaManager implements Runnable {
 	private String replicaName;
 	
 	private Process replicaProcess;
+	
 
 	
 	
@@ -118,6 +121,12 @@ public class ReplicaManager implements Runnable {
 		//decide which id is smaller, the smaller one is the sequencer
 		//Multicast result set sequncer
 		//Change current sequencer id to result
+		
+		Multicaster multicaster = new Multicaster(4001,"234.1.2.1"); 
+		
+		String message = "election" + sequencer.getSequencerID();
+		
+		multicaster.sendMessage(message);
 		
 	}
 	

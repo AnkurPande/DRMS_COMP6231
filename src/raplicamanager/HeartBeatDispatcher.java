@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.TimerTask;
 
 import server.UDPSender;
+import udp.Multicaster;
 
 public class HeartBeatDispatcher extends Thread  {
 
@@ -142,11 +143,18 @@ public class HeartBeatDispatcher extends Thread  {
 			
 		} catch (SocketTimeoutException e) {
 			
-			if(rm.getSequencer().getCurrentCoordinator() == Integer.parseInt(rmId)) {
+			if(rm.getSequencer().getCordinatorID() == Integer.parseInt(rmId)) {
 				rm.electNewCoordinator();
 			}
 			
 			rm.revoverReplicaManager(rmId);
+			
+			Multicaster multicaster = new Multicaster(4001,"234.1.2.1"); 
+			
+			String message = "cordinator" + rm.getSequencer().getCordinatorID();
+			
+			multicaster.sendMessage(message);
+			
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

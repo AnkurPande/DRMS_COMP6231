@@ -15,8 +15,10 @@ public class Sequencer extends Thread{
 	
 	private int lastAgreedSequenceNumber;
 	private int lastProposedSequenceNumber;
-	private boolean isCordinator;
-	//private boolean isSequenceAggreed;
+	private int sequencerID;
+	private boolean cordinator;
+	
+
 	private int portNumber;
 	private int replicaPortNumber;
 	private String groupAddress;
@@ -25,6 +27,8 @@ public class Sequencer extends Thread{
 	private InetAddress replicaHost;
 	private Map<Integer,Vector<Integer>> proposedNumbers;
 	private Map<Integer,String> requests;
+	private int cordinatorID;
+	
 	
 	
 	
@@ -38,14 +42,14 @@ public class Sequencer extends Thread{
 	 * @param the replica IP address
 	 */
 	
-	Sequencer(boolean cordinator, int port,int replicaPort, String address, String replicaAddress) throws IOException
+	Sequencer(boolean cordinator, int port,int replicaPort, String address, String replicaAddress, int ID) throws IOException
 	{
+		sequencerID = ID;
 		lastAgreedSequenceNumber = 0;
 		proposedNumbers = new HashMap<Integer,Vector<Integer>>();
 		requests = new HashMap<Integer,String>();
 		lastProposedSequenceNumber = 0;
-		isCordinator = cordinator;
-		//isSequenceAggreed = false;
+		this.cordinator = cordinator;
 		portNumber = port;
 		groupAddress = address;
 		replicaPortNumber = replicaPort;
@@ -53,6 +57,8 @@ public class Sequencer extends Thread{
 		socketM = new MulticastSocket(port);
 		host = InetAddress.getByName(groupAddress);
 		socketM.joinGroup(host);
+		cordinatorID = 3;
+		
 	}
 	
 	@Override
@@ -87,12 +93,42 @@ public class Sequencer extends Thread{
 				result = new String(receivedPacket.getData()).trim();
 				String[] request = result.split(","); 
 				
+				if (request.length == 2)
+				{
+					if (request[0].equals("election"))
+					{
+						if(Integer.parseInt(request[1]) > sequencerID)
+						{
+							String message = "cordinator" + request[1];
+							sendMessage(message, socketM);
+						}
+						
+						if (Integer.parseInt(request[1]) < sequencerID)
+						{
+							String message = "cordinator" + sequencerID;
+							cordinator = true;
+							sendMessage(message, socketM);
+						}
+					}
+					
+					if (request[0].equals("cordinator"))
+					{
+						cordinatorID = Integer.parseInt(request[1]);
+						
+						if (Integer.parseInt(request[1]) == sequencerID) cordinator = true;
+						
+						System.out.println("the cordinator ID is: " + cordinatorID);
+					}
+					
+					
+				}
+				
 				if (request.length == 3)
 				{
 					//Isis for agreeing on the sequence number
 					if(request[0].equals("vote"))
 					{
-						if (!isCordinator)
+						if (!cordinator)
 						{
 							this.lastProposedSequenceNumber = Math.max(this.lastAgreedSequenceNumber,this.lastProposedSequenceNumber) + 1;
 							String reply = "propose,"+ request[1] + "," + lastProposedSequenceNumber;
@@ -100,9 +136,10 @@ public class Sequencer extends Thread{
 						}
 					}
 					
+					
 					if (request[0].equals("propose"))
 					{
-						if (isCordinator)
+						if (cordinator)
 						{
 							if (lastAgreedSequenceNumber < Integer.parseInt(request[2]))
 							{
@@ -124,7 +161,7 @@ public class Sequencer extends Thread{
 					{
 						this.lastAgreedSequenceNumber = Integer.parseInt(request[2]);
 
-						if(isCordinator)
+						if(cordinator)
 						{
 							String reply = ""+ request[1] + "," + lastAgreedSequenceNumber;
 							replyToFE(reply);
@@ -157,7 +194,7 @@ public class Sequencer extends Thread{
 						requests.put(Integer.parseInt(request[1]), result);
 						System.out.println(result+"FE");
 						
-						if (isCordinator)
+						if (cordinator)
 						{
 							Vector<Integer> vec = new Vector<>();
 							proposedNumbers.put(Integer.parseInt(request[1]), vec);
@@ -183,6 +220,22 @@ public class Sequencer extends Thread{
 		
 	}
 	
+	public int getSequencerID() {
+		return sequencerID;
+	}
+
+	public void setSequencerID(int sequencerID) {
+		this.sequencerID = sequencerID;
+	}
+
+	public int getCordinatorID() {
+		return cordinatorID;
+	}
+
+	public void setCordinatorID(int cordinatorID) {
+		this.cordinatorID = cordinatorID;
+	}
+
 	/**
 	 * Send a UDP message.
 	 *
@@ -248,9 +301,9 @@ public class Sequencer extends Thread{
 	{
 		try{
 			
-			Sequencer s1 = new Sequencer(true, 4001,8001,"234.1.2.1", "localhost");
-			Sequencer s2 = new Sequencer(false, 4001,8002,"234.1.2.1", "localhost");
-			Sequencer s3 = new Sequencer(false, 4001,8003,"234.1.2.1", "localhost");
+			Sequencer s1 = new Sequencer(true, 4001,8001,"234.1.2.1", "localhost",3);
+			Sequencer s2 = new Sequencer(false, 4001,8002,"234.1.2.1", "localhost",2);
+			Sequencer s3 = new Sequencer(false, 4001,8003,"234.1.2.1", "localhost",1);
 			
 			s1.start();
 			s2.start();
@@ -261,6 +314,14 @@ public class Sequencer extends Thread{
 		{
 			System.out.println("IOa: " + e.getMessage());
 		}
+	}
+	
+	public boolean isCordinator() {
+		return cordinator;
+	}
+
+	public void setCordinator(boolean cordinator) {
+		this.cordinator = cordinator;
 	}
 	
 }
