@@ -1,7 +1,6 @@
 package replica;
 
 import udp.UDPReciever;
-import udp.UDPSender;
 
 public class Heartbeat extends Thread{
 

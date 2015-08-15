@@ -7,6 +7,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class Sequencer extends Thread{
 	 * @param the replica IP address
 	 */
 	
-	Sequencer(boolean cordinator, int port,int replicaPort, String address, String replicaAddress, int ID) throws IOException
+	Sequencer(boolean cordinator, int port,int replicaPort, String address, String replicaAddress, int ID) 
 	{
 		sequencerID = ID;
 		lastAgreedSequenceNumber = 0;
@@ -53,10 +54,20 @@ public class Sequencer extends Thread{
 		portNumber = port;
 		groupAddress = address;
 		replicaPortNumber = replicaPort;
-		replicaHost = InetAddress.getByName(replicaAddress);
-		socketM = new MulticastSocket(port);
-		host = InetAddress.getByName(groupAddress);
-		socketM.joinGroup(host);
+		try {
+			replicaHost = InetAddress.getByName(replicaAddress);
+			socketM = new MulticastSocket(port);
+			host = InetAddress.getByName(groupAddress);
+			socketM.joinGroup(host);
+		} catch (UnknownHostException e) {
+
+			e.printStackTrace();
+		} catch (IOException e) {
+			
+			System.out.println("IOa: " + e.getMessage());
+
+		}
+		
 		cordinatorID = 3;
 		
 	}
@@ -299,21 +310,15 @@ public class Sequencer extends Thread{
 	
 	public static void main(String[] args)
 	{
-		try{
+
+		Sequencer s1 = new Sequencer(true, 4001,8001,"235.1.10.1", "localhost",3);
+		Sequencer s2 = new Sequencer(false, 4001,8002,"235.1.10.1", "localhost",2);
+		Sequencer s3 = new Sequencer(false, 4001,8003,"235.1.10.1", "localhost",1);
 			
-			Sequencer s1 = new Sequencer(true, 4001,8001,"234.1.2.1", "localhost",3);
-			Sequencer s2 = new Sequencer(false, 4001,8002,"234.1.2.1", "localhost",2);
-			Sequencer s3 = new Sequencer(false, 4001,8003,"234.1.2.1", "localhost",1);
-			
-			s1.start();
-			s2.start();
-			s3.start();
-			
-		}
-		catch(IOException e)
-		{
-			System.out.println("IOa: " + e.getMessage());
-		}
+		s1.start();
+		s2.start();
+		s3.start();
+				
 	}
 	
 	public boolean isCordinator() {

@@ -131,7 +131,7 @@ public class LibraryServerReplica implements Runnable{
 		initializeTestingData();
 		
 		//Initialize log file
-		System.out.println(this.nameOfServer + " server is up!");
+		System.out.println(this.nameOfServer + " is up!");
 		try{
 			File f = new File(this.nameOfServer +"_log.txt");
 			if(!f.exists())
@@ -603,12 +603,12 @@ public class LibraryServerReplica implements Runnable{
 	public static void main(String args[]){
 		
 		LibraryServerInfo info1 = new LibraryServerInfo(1,
-														ConstantValue.REPLICA1,
-														ConstantValue.REPLICA1_UDP_PORT,
-														ConstantValue.REPLICA1_IP_ADDRESS,
-														ConstantValue.REPLICA1_HEARTBEAT_PORT,
-														ConstantValue.REPLICA1_HEARTBEAT_RM_PORT,
-														ConstantValue.REPLICA1_RM_IP_ADDRESS);
+														ConstantValue.REPLICA3,
+														ConstantValue.REPLICA3_UDP_PORT,
+														ConstantValue.REPLICA3_IP_ADDRESS,
+														ConstantValue.REPLICA3_HEARTBEAT_PORT,
+														ConstantValue.REPLICA3_HEARTBEAT_RM_PORT,
+														ConstantValue.REPLICA3_RM_IP_ADDRESS);
 		
 		
 		

@@ -142,17 +142,17 @@ public class HeartBeatDispatcher extends Thread  {
 			
 		} catch (SocketTimeoutException e) {
 			
-			if(rm.getSequencer().getCordinatorID() == Integer.parseInt(rmId)) {
-				rm.electNewCoordinator();
-			}
-			
-			rm.revoverReplicaManager(rmId);
-			
-			Multicaster multicaster = new Multicaster(4001,"234.1.2.1"); 
-			
-			String message = "cordinator" + rm.getSequencer().getCordinatorID();
-			
-			multicaster.sendMessage(message);
+//			if(rm.getSequencer().getCordinatorID() == Integer.parseInt(rmId)) {
+//				rm.electNewCoordinator();
+//			}
+//			
+//			rm.revoverReplicaManager(rmId);
+//			
+//			Multicaster multicaster = new Multicaster(4001,"234.1.2.1"); 
+//			
+//			String message = "cordinator" + rm.getSequencer().getCordinatorID();
+//			
+//			multicaster.sendMessage(message);
 			
 			
 		} catch (IOException e) {

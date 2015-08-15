@@ -10,7 +10,7 @@ public class Test2 {
 	
 	public static void main(String[] args) {
 		
-		String host= "234.1.2.1";
+		String host= "234.1.10.1";
 		try {
 			
 			MulticastSocket socket = new MulticastSocket(4001);

@@ -25,20 +25,21 @@ public class ReplicaManager implements Runnable {
 	
 	
 	/* CONSTRUCTOR */
-	ReplicaManager(String RmID, int RmPort, String RmIP) {
+	ReplicaManager(String RmID, int RmPort, String RmIP, String replicaName) {
 		
 		dispatcher = new HeartBeatDispatcher(this);
 		listener = new HeartBeatListener(this);
 		
-		listener.start();
-
-		dispatcher.start();
+		
 
 		this.CURRENT_RM_ID = RmID;
 		this.CURRENT_RM_PORT = RmPort;
 		this.CURRENT_RM_IP = RmIP;
+		this.replicaName = replicaName;
 		
 		this.startReplica();
+		
+	
 	}
 	
 	
@@ -51,7 +52,7 @@ public class ReplicaManager implements Runnable {
 		pb.command("java", "-jar",  path);
 		pb.redirectError(Redirect.INHERIT);
 		pb.redirectOutput(Redirect.INHERIT);
-		pb.directory(new File("./replicas/" + replicaName + "/"));
+		pb.directory(new File("./replicas/"));
 		
 		try {
 			replicaProcess = pb.start();
@@ -83,7 +84,7 @@ public class ReplicaManager implements Runnable {
 		pb.command("java", "-jar",  path);
 		pb.redirectError(Redirect.INHERIT);
 		pb.redirectOutput(Redirect.INHERIT);
-		pb.directory(new File("./replicas/" + replicaName + "/"));
+		pb.directory(new File("./replicas/"));
 		
 		try {
 			replicaProcess = pb.start();
@@ -99,7 +100,11 @@ public class ReplicaManager implements Runnable {
 	@Override
 	public void run()
 	{
+		sequencer.start();
 
+		listener.start();
+
+		dispatcher.start();	
 	}
 	
 	
@@ -134,13 +139,24 @@ public class ReplicaManager implements Runnable {
 	
 	public static void main(String [] args)
 	{
-		ReplicaManager r1 = new ReplicaManager("1", 6001, "localhost");
+		ReplicaManager r1 = new ReplicaManager("1", 6001, "localhost", "Replica1");
+		Sequencer s1 = new Sequencer(true, 4001,8001,"235.1.10.1", "localhost",3);
+		r1.setSequencer(s1);
 		Thread t1 = new Thread(r1);
-		t1.start();
 		
-		ReplicaManager r2 = new ReplicaManager("2", 6002, "localhost");
+		ReplicaManager r2 = new ReplicaManager("2", 6002, "localhost", "Replica2");
+		Sequencer s2 = new Sequencer(false, 4001,8002,"235.1.10.1", "localhost",2);
+		r2.setSequencer(s2);
 		Thread t2 = new Thread(r2);
+		
+		ReplicaManager r3 = new ReplicaManager("3", 6003, "localhost", "Replica3");
+		Sequencer s3 = new Sequencer(false, 4001,8003,"235.1.10.1", "localhost",1);
+		r3.setSequencer(s3);
+		Thread t3 = new Thread(r3);
+		
+		t1.start();
 		t2.start();
+		t3.start();
 		
 		
 	}
