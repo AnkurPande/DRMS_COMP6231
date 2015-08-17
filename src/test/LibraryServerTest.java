@@ -121,4 +121,17 @@ public class LibraryServerTest {
 		Book bookB = replica3.getBook("TestBook", "TestAuthor");
 		assertEquals(bookA, bookB);
 	}
+	
+	@Test
+	public void testHeartBeat(){
+		UDPSender send = new UDPSender(7003,"localhost");
+		String response  =null;
+		try {
+			response = send.sendMessage("isAlive").trim();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		assertEquals("true",response);
+	}
 }
