@@ -20,7 +20,7 @@ public class HeartBeatListener extends Thread {
 		String responseMessageString = "";
 		
 		try {
-			socket = new DatagramSocket(rm.CURRENT_RM_PORT, InetAddress.getByName(rm.CURRENT_RM_IP));		
+			socket = new DatagramSocket(rm.CURRENT_HEARTBEAT_PORT, InetAddress.getByName(rm.CURRENT_RM_IP));		
 			byte[] buffer = new byte[1000];
 			
 			while(true) {
@@ -33,7 +33,6 @@ public class HeartBeatListener extends Thread {
 				responseMessageString = rm.getReplicaManagerID(); // getting current replica manager ID
 				message = responseMessageString.getBytes();
 				
-				System.out.println(responseMessageString);
 				
 				DatagramPacket responsePacket = new DatagramPacket(message, message.length, requestPacket.getAddress(), requestPacket.getPort());
 				socket.send(responsePacket);

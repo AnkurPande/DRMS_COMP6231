@@ -18,7 +18,7 @@ public class Request extends Thread {
 	
 	
 	
-	String resultOfRequest = null;
+	String resultOfRequest = "";
 	
 	
 	public Request(int category, String parameters) {
@@ -27,13 +27,19 @@ public class Request extends Thread {
 		this.setRequestParameters(parameters);
 		this.setRequestStatus(ConstantValue.WAIT_FOR_SEQUENCE_NUMBER);
 		this.setSequenceNumber(ConstantValue.NON_SEQUENCE_NUMBER);
+		
+		
+		resultFromReplica[1] = "empty1";
+		resultFromReplica[2] = "empty2";
+		resultFromReplica[3] = "empty3";
+
 	}
 	
 	public String getFinalResult() {
 		
-		synchronized(resultOfRequest) {
+		synchronized(this) {
 			
-			while(resultOfRequest == null ) {
+			while(resultOfRequest == "" ) {
 				try {
 					this.wait();
 				} catch (InterruptedException e) {
@@ -50,14 +56,21 @@ public class Request extends Thread {
 	
 	
 
-	
+	@Override
+	public void run() {
+		
+	}
 	
 	public String getResultOfRequest() {
 		return resultOfRequest;
 	}
 
 	public void setResultOfRequest(String string) {
-		this.resultOfRequest = string;
+		
+		synchronized(this) {
+			this.resultOfRequest = string;
+			this.notify();
+		}
 	}
 
 	public int getRequestCategory() {

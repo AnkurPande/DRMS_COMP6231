@@ -47,7 +47,7 @@ public class UDPSender {
 			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
 			socket.send(sendPacket);
 			
-			socket.setSoTimeout(30);
+			socket.setSoTimeout(500);
 			
 			byte[] buffer = new byte[1000];
 			DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
@@ -58,7 +58,7 @@ public class UDPSender {
 			return result.trim();
 			
 		} catch (SocketException e) {
-			System.out.println("Socket: " + e.getMessage());
+			System.out.println("UDPSender Socket: " + e.getMessage());
 		
 		} finally {
 			if (socket != null) socket.close();
@@ -78,9 +78,7 @@ public class UDPSender {
 			socket.send(sendPacket);
 		} catch(Exception e) {
 			e.printStackTrace();
-		} finally {
-			socket.close();
-		}
+		} 
 	}
 	
 	//--------------------------------------------Getters & Setters -----------------------------------------------------------//

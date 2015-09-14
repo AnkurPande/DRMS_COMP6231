@@ -1,6 +1,8 @@
 package replica;
 
-import udp.UDPReciever;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public class Heartbeat extends Thread{
 
@@ -16,28 +18,33 @@ private LibraryServerReplica server;
 	
 	@Override
 	public void run() {
-		String responseMessageString = null;
-		UDPReciever heartBeatReciever = null;
+		
+		DatagramSocket socket = null;
+		String responseMessageString = "";
+		
 		try {
-			//Initialize socket to receive response
-			heartBeatReciever = new UDPReciever(server.getIpAddress(),server.getHeartBeatListenPort());		
-			while(true){
-					
-				String receivedMessageString = heartBeatReciever.recieveRequest();
-				
-				String[] requestParts = receivedMessageString.split(",");
-												
-				if(requestParts[1].equals("isAlive")) {
-					responseMessageString = "True,"+server.getReplicaID();
-					heartBeatReciever.sendResponse(responseMessageString);
-				}
-			}
+			socket = new DatagramSocket(server.getHeartBeatListenPort(), InetAddress.getByName(server.getIpAddress()));		
+			byte[] buffer = new byte[1000];
 			
+			while(true) {
+
+				DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
+				socket.receive(requestPacket);
+								
+				byte[] message = requestPacket.getData();
+				
+				responseMessageString = "true"; 
+				message = responseMessageString.getBytes();
+				
+				
+				DatagramPacket responsePacket = new DatagramPacket(message, message.length, requestPacket.getAddress(), requestPacket.getPort());
+				socket.send(responsePacket);
+			}
 		} catch (Exception e) {
-			System.out.println("UDP Exception");
+			
+		} finally {
+			if (socket != null) socket.close();
 		}
-		finally{
-			heartBeatReciever.close();
-		}
+
 	}
 }

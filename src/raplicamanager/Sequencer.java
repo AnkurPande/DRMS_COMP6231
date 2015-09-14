@@ -3,13 +3,15 @@ package raplicamanager;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Vector;
+
+import udp.UDPSender;
+
 import java.util.Map;
 
 public class Sequencer extends Thread{
@@ -25,6 +27,7 @@ public class Sequencer extends Thread{
 	private String groupAddress;
 	private MulticastSocket socketM;
 	private InetAddress host;
+	@SuppressWarnings("unused")
 	private InetAddress replicaHost;
 	private Map<Integer,Vector<Integer>> proposedNumbers;
 	private Map<Integer,String> requests;
@@ -102,7 +105,7 @@ public class Sequencer extends Thread{
 				socketM.receive(receivedPacket);
 				
 				result = new String(receivedPacket.getData()).trim();
-				String[] request = result.split(","); 
+				String[] request = result.split(",");
 				
 				if (request.length == 2)
 				{
@@ -128,7 +131,6 @@ public class Sequencer extends Thread{
 						
 						if (Integer.parseInt(request[1]) == sequencerID) cordinator = true;
 						
-						System.out.println("the cordinator ID is: " + cordinatorID);
 					}
 					
 					
@@ -162,7 +164,6 @@ public class Sequencer extends Thread{
 								
 									String reply = "agreed," + request[1] + "," + max;
 									sendMessage(reply,socketM);
-									System.out.println("agreed sequence number ("+max+") dispatched for request: " + request[1]);
 								}
 							}
 						}
@@ -171,26 +172,31 @@ public class Sequencer extends Thread{
 					if(request[0].equals("agreed"))
 					{
 						this.lastAgreedSequenceNumber = Integer.parseInt(request[2]);
+						
+						boolean flag = false;
 
 						if(cordinator)
 						{
-							String reply = ""+ request[1] + "," + lastAgreedSequenceNumber;
-							replyToFE(reply);
-							System.out.println("FE got: sequence number("+lastAgreedSequenceNumber+") for request " + request[1]);
+							String reply = "1,"+ request[1] + "," + lastAgreedSequenceNumber;
+							flag = replyToFE(reply);
 							proposedNumbers.remove(Integer.parseInt(request[1]));
 							
 						}
 						
 						String[] aRequest = requests.get(Integer.parseInt(request[1])).split(",");
 						
-						String aMessage = "1,"+ lastAgreedSequenceNumber + aRequest[2] + aRequest[3];
+						@SuppressWarnings("unused")
+						String aMessage = "1,"+ lastAgreedSequenceNumber + "," + aRequest[2] + "," + aRequest[3];
+						
 						
 						// Transfers the request to the replica
-						transferRequestToReplica(aMessage);
+						if (flag) {
+							
+							String message = "Send to replica," + aRequest[1];
+							sendMessage(message,socketM);
+							flag = false;
+						}
 						
-						System.out.println("replica got request("+request[1]+") with sequence: " + lastAgreedSequenceNumber);
-						
-						requests.remove(Integer.parseInt(request[1]));
 							
 					}
 					
@@ -203,7 +209,6 @@ public class Sequencer extends Thread{
 					if (request[0].equals("1"))
 					{
 						requests.put(Integer.parseInt(request[1]), result);
-						System.out.println(result+"FE");
 						
 						if (cordinator)
 						{
@@ -219,10 +224,21 @@ public class Sequencer extends Thread{
 					
 				}
 				
+				if (request.length == 2){
+					
+					String[] aRequest = requests.get(Integer.parseInt(request[1])).split(",");
+					
+					String message = "1,"+ lastAgreedSequenceNumber + "," + aRequest[2] + "," + aRequest[3];
+					
+					transferRequestToReplica(message);
+					
+					requests.remove(Integer.parseInt(request[1]));
+				}
+				
 			}
 			
 		} catch (SocketException e) {
-			System.out.println("Socket: " + e.getMessage());
+			System.out.println("Socket2: " + e.getMessage());
 		} catch (IOException e) {
 			System.out.println("IO: " + e.getMessage());
 		} finally {
@@ -262,50 +278,39 @@ public class Sequencer extends Thread{
 			mySocket.send(sendPacket);
 			
 		} catch (SocketException e) {
-			System.out.println("Socket: " + e.getMessage());
+			System.out.println("Socket3: " + e.getMessage());
 		} catch (IOException e) {
 			System.out.println("IO: " + e.getMessage());
 		} 
 	}
 	
-	public void replyToFE(String message)
+	public boolean replyToFE(String message)
 	{
-		DatagramSocket socket = null;
 		
-		try{
-			socket = new DatagramSocket(5002,InetAddress.getByName("localhost"));
-			
-			byte[] udpMessage = (message).getBytes();
-			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, portNumber);
-			socket.send(sendPacket);
-			
-		} catch (SocketException e) {
-			System.out.println("Socket: " + e.getMessage());
+		UDPSender sender = new UDPSender(5002, "localhost");
+		
+		try {
+			String result = sender.sendMessage(message);
+			if(result.equals("true"))  {
+				
+			return true; 
+			}
 		} catch (IOException e) {
-			System.out.println("IO: " + e.getMessage());
-		} finally {
-			if (socket != null) socket.close();
+			
+			System.out.println("Reply to fe: " + e.getMessage());
+			return false;
 		}
+		
+		return false;
 	}
 	
 	public void transferRequestToReplica(String message)
 	{
-		DatagramSocket socket = null;
 		
-		try{
-			socket = new DatagramSocket(replicaPortNumber,replicaHost);
-			
-			byte[] udpMessage = (message).getBytes();
-			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, portNumber);
-			socket.send(sendPacket);
-			
-		} catch (SocketException e) {
-			System.out.println("Socket: " + e.getMessage());
-		} catch (IOException e) {
-			System.out.println("IO: " + e.getMessage());
-		} finally {
-			if (socket != null) socket.close();
-		}
+		UDPSender sender = new UDPSender(replicaPortNumber, "localhost");
+		
+		sender.sendOnly(message);
+		
 	}
 	
 	public static void main(String[] args)

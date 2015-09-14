@@ -1,26 +1,15 @@
 package frontend;
 
-import java.io.IOException;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import udp.Multicaster;
 import udp.UDPSender;
 
-public class FrontEnd implements FrontEndInterface, Runnable {
+public class FrontEnd implements Runnable {
 	
 	
 	
-	public static final int PORT_OF_RMI = 5001;
 	public static final String NAME_OF_FRONTEND = "LibraryServerFrontend";
 	
 	private Map<Integer, RMAddressAndPort> infoOfRM = new HashMap<Integer, RMAddressAndPort>();
@@ -41,24 +30,41 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 	
 
 	private int requestID = 0;
-	
+		
+	private FrontEndSender frontEndSender;
+	private FrontEndUDPListener listener;
 	
 	public FrontEnd() {
 		
-		infoOfRM.put(1, new RMAddressAndPort(6001, "localhost"));
-		infoOfRM.put(2, new RMAddressAndPort(6002, "localhost"));
-		infoOfRM.put(3, new RMAddressAndPort(6003, "localhost"));	
+		this.ipAddress = "localhost";
+		this.portOfUDP = 5002;
+		
+		infoOfRM.put(1, new RMAddressAndPort(6501, "localhost"));
+		infoOfRM.put(2, new RMAddressAndPort(6502, "localhost"));
+		infoOfRM.put(3, new RMAddressAndPort(6503, "localhost"));	
+		
+		frontEndSender = new FrontEndSender(this);
+		listener = new FrontEndUDPListener(this);
+		
+		frontEndSender.start();
+		listener.start();
+		
+		
 		
 	}
 	
 	
 
-	@Override
+	
 	public String createAccount(String firstName, String lastName, String emailAddress, String phoneNumber,
-			String username, String password, String eduInstitution) throws RemoteException {
+			String username, String password, String eduInstitution)  {
 		
-		Request request = new Request(ConstantValue.CREATE_ACCOUNT,firstName + "," + lastName + "," + emailAddress + "," + phoneNumber
-				+ "," + username + "," + password + "," +  eduInstitution);
+		
+		
+		Request request = new Request(ConstantValue.CREATE_ACCOUNT,firstName + "-" + lastName + "-" + emailAddress + "-" + phoneNumber
+				+ "-" + username + "-" + password + "-" +  eduInstitution);
+		
+
 		
 		holdingQueue.add(request);
 		
@@ -66,53 +72,56 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 		return request.getFinalResult();
 	}
 
-	@Override
-	public String reserveBook(String username, String password, String bookName, String authorName)
-			throws RemoteException {
+	
+	public String reserveBook(String username, String password, String bookName, String authorName) {
 
+		
+		
 		Request request = new Request(ConstantValue.RESERVE_BOOK, username + "," + password + "," + bookName + "," + authorName );
-		holdingQueue.add(request);
-				
+		
+		request.start();
+		
+		holdingQueue.add(request);		
+		
 		return request.getFinalResult();
 	}
 
-	@Override
+	
 	public String getNonRetuners(String adminUsername, String adminPassword, String eduInstitution, String numDays)
-			throws RemoteException {
+			 {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	public String setDuration(String username, String bookName, int numOfDays) throws RemoteException {
+	
+	public String setDuration(String username, String bookName, int numOfDays)  {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void sendRequestToRM(Request request) {
-		
-	}
+
 	
 	public void setSequenceNumberToRequest(int requestID, int sequenceNumber) {
 		
-		if(this.unSequencedRequests.get(requestID) != null) {
+		
 			Request request = this.unSequencedRequests.get(requestID);
 			this.unSequencedRequests.remove(requestID);
 			
 			request.setSequenceNumber(sequenceNumber);
 			this.sequencedRequests.put(sequenceNumber, request);
-		}
+			System.out.println("Set sequencer number to request "  + sequenceNumber);
+		
 		
 		
 	}
 	
-	public void setResultOfRequest (int sequenceNumber, String result) {
-		
-		synchronized(sequencedRequests.get(sequenceNumber).getResultOfRequest()) {
-			sequencedRequests.get(sequenceNumber).setResultOfRequest(result);
-			this.notify();
-		}
-	}
+//	public void setResultOfRequest (int sequenceNumber, String result) {
+//		
+//		synchronized(sequencedRequests.get(sequenceNumber).getResultOfRequest()) {
+//			sequencedRequests.get(sequenceNumber).setResultOfRequest(result);
+//			this.notify();
+//		}
+//	}
 	
 	public void checkResult (Request request) {
 		
@@ -124,7 +133,7 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 			
 			for(int i=1; i<=3; i++) {
 				
-				if (resultFromReplicas[i] != null) {
+				if (!resultFromReplicas[i].equals("empty" + i) ) {
 					++ numOfResultReceived;
 				}
 			}
@@ -147,9 +156,15 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 				if(request.getRequestStatus() == ConstantValue.GOT_RESULT) {
 					for(int i=1; i<=3; i++) {
 						if(!request.getResultFromReplica()[i].equalsIgnoreCase(request.getResultOfRequest())) {
+							
+							System.out.println("Get result " + request.getResultFromReplica()[i] );
+							System.out.println("Actually got " + request.getResultOfRequest());
+							
 							this.replicaFailCount[i-1] += 1;
-							if(this.replicaFailCount[i] >= 3) {
+							System.out.println("replica got wrong result " + (i-1) );
+							if(this.replicaFailCount[i-1] >= 3) {
 								this.informManagerForFailReplica(i);
+								this.replicaFailCount[i-1] = 0;
 							}
 						}
 					}
@@ -167,29 +182,29 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 		String[] resultFromReplicas = request.getResultFromReplica();
 
 		
-		if(resultFromReplicas[1].equalsIgnoreCase(resultFromReplicas[2])) {
+		
+		if(resultFromReplicas[1].equals(resultFromReplicas[2])) {
 			
-			synchronized(request.getResultOfRequest()) {
+			
 				
 				request.setResultOfRequest(resultFromReplicas[1]);
-				this.notify();
+				
 				request.setRequestStatus(ConstantValue.GOT_RESULT);
-			}
+			
 		}
-		if(resultFromReplicas[1].equalsIgnoreCase(resultFromReplicas[3])) {
-			synchronized(request.getResultOfRequest()) {
+		if(resultFromReplicas[1].equals(resultFromReplicas[3])) {
+			
 				request.setResultOfRequest(resultFromReplicas[1]);
-				this.notify();
 				request.setRequestStatus(ConstantValue.GOT_RESULT);
 
-			}
+			
 		}
-		if(resultFromReplicas[2].equalsIgnoreCase(resultFromReplicas[3])) {
-			synchronized(request.getResultOfRequest()) {
+		if(resultFromReplicas[2].equals(resultFromReplicas[3])) {
+			
 				request.setResultOfRequest(resultFromReplicas[2]);
-				this.notify();
+			
 				request.setRequestStatus(ConstantValue.GOT_RESULT);
-			}
+			
 		}
 	}
 	
@@ -200,64 +215,14 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 		
 		UDPSender sender = new UDPSender(rm.rmPort,rm.rmIpAddress);
 		
-		try {
-			sender.sendMessage(ConstantValue.INFORM_RM_FAILURE +"," + i);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	
+		sender.sendOnly(ConstantValue.INFORM_RM_FAILURE +"," + i);
+		
+		System.out.println("Replica Failure Detected: ID: " + i + ", Restart the replica");
 		
 	}
 	
-	@Override
-	public void run() {
-		
-		while(true) {
-			
-			Request currentRequest = holdingQueue.poll();
-			
-			++requestID;
-			
-			currentRequest.setRequestID(requestID);;
-			
-				
-			Multicaster multicaster = new Multicaster(0, "");
-			
-			String requestData = ConstantValue.SEND_REQUEST + "," +currentRequest.getRequestID() + "," + currentRequest.getRequestCategory()+ ","+ currentRequest.getRequestParameters();
-			
-			multicaster.sendMessage (requestData);
-				
-				
-		
-			currentRequest.setRequestStatus(ConstantValue.WAIT_FOR_RESULT);
-			
-			Timer timer = new Timer();
-			timer.schedule(new SequenceNumberChecker(currentRequest,this), 50);
-			
-			unSequencedRequests.put(currentRequest.requestID, currentRequest);
-		}
-		
-	}
-	
-	public static void main(String[] args) {
-		
-		FrontEnd frontend = new FrontEnd();
-		
-		try{
-			Registry registry = LocateRegistry.createRegistry(PORT_OF_RMI);
-			
-			Remote obj = UnicastRemoteObject.exportObject(frontend, PORT_OF_RMI);
-			registry.bind(NAME_OF_FRONTEND, obj);
-			System.out.println("Front End is running!");
 
-			
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		} 
-		
-	}
-	
 	
 	
 	public class RMAddressAndPort {
@@ -270,26 +235,7 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 		String rmIpAddress;
 	}
 	
-	public class SequenceNumberChecker extends TimerTask {
-		
-		Request request;
-		FrontEnd frontend;
-		public SequenceNumberChecker(Request request, FrontEnd frontend) {
-			this.request = request;
-			this.frontend = frontend;
-		}
-		
-		@Override
-		public void run() {
-			if(request.getSequenceNumber() == ConstantValue.NON_SEQUENCE_NUMBER) {
-				frontend.getUnSequencedRequests().remove(request.requestID, request);
-				frontend.getHoldingQueue().add(request);
-				
-			}
-			
-		}
-		
-	}
+	
 	public String getIpAddress() {
 		return ipAddress;
 	}
@@ -370,6 +316,41 @@ public class FrontEnd implements FrontEndInterface, Runnable {
 
 	public void setUnSequencedRequests(Map<Integer, Request> unSequencedRequests) {
 		this.unSequencedRequests = unSequencedRequests;
+	}
+
+
+	public FrontEndSender getFrontEndSender() {
+		return frontEndSender;
+	}
+
+
+
+
+	public void setFrontEndSender(FrontEndSender frontEndSender) {
+		this.frontEndSender = frontEndSender;
+	}
+
+
+
+
+	public FrontEndUDPListener getListener() {
+		return listener;
+	}
+
+
+
+
+	public void setListener(FrontEndUDPListener listener) {
+		this.listener = listener;
+	}
+
+
+
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	

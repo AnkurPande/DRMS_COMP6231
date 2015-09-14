@@ -3,13 +3,16 @@ package raplicamanager;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 import udp.Multicaster;
 
 public class ReplicaManager implements Runnable {
 		
 	public String CURRENT_RM_ID;
-	public int CURRENT_RM_PORT;
+	public int CURRENT_HEARTBEAT_PORT;
 	public String CURRENT_RM_IP;
 	
 	private HeartBeatDispatcher dispatcher;
@@ -21,24 +24,28 @@ public class ReplicaManager implements Runnable {
 	
 	private Process replicaProcess;
 	
+	private ReplicaManagerUDPListener managerListener;
 
+	private int replicaManagerPort; 
 	
 	
 	/* CONSTRUCTOR */
-	ReplicaManager(String RmID, int RmPort, String RmIP, String replicaName) {
+	ReplicaManager(String RmID, int RmPort, String RmIP, String replicaName, int replicaPort, String replicaIp, int replicaManagerPort) {
 		
-		dispatcher = new HeartBeatDispatcher(this);
+		dispatcher = new HeartBeatDispatcher(this, replicaPort, replicaIp);
 		listener = new HeartBeatListener(this);
 		
 		
 
 		this.CURRENT_RM_ID = RmID;
-		this.CURRENT_RM_PORT = RmPort;
+		this.CURRENT_HEARTBEAT_PORT = RmPort;
 		this.CURRENT_RM_IP = RmIP;
 		this.replicaName = replicaName;
+		this.managerListener = new ReplicaManagerUDPListener();
+		this.replicaManagerPort = replicaManagerPort;
 		
 		this.startReplica();
-		
+		this.managerListener.start();
 	
 	}
 	
@@ -80,11 +87,11 @@ public class ReplicaManager implements Runnable {
 		System.out.println("Recovering replica manager: "+ rmID);
 		
 		ProcessBuilder pb = new ProcessBuilder();
-		String path = "./" + replicaName + ".jar";
+		String path = "./" + replicaName + "manager" + ".jar";
 		pb.command("java", "-jar",  path);
 		pb.redirectError(Redirect.INHERIT);
 		pb.redirectOutput(Redirect.INHERIT);
-		pb.directory(new File("./replicas/"));
+		pb.directory(new File("./managers/"));
 		
 		try {
 			replicaProcess = pb.start();
@@ -139,17 +146,17 @@ public class ReplicaManager implements Runnable {
 	
 	public static void main(String [] args)
 	{
-		ReplicaManager r1 = new ReplicaManager("1", 6001, "localhost", "Replica1");
+		ReplicaManager r1 = new ReplicaManager("1", 6001, "localhost", "Replica1", 7001, "localhost", 6501);
 		Sequencer s1 = new Sequencer(true, 4001,8001,"235.1.10.1", "localhost",3);
 		r1.setSequencer(s1);
 		Thread t1 = new Thread(r1);
 		
-		ReplicaManager r2 = new ReplicaManager("2", 6002, "localhost", "Replica2");
+		ReplicaManager r2 = new ReplicaManager("2", 6002, "localhost", "Replica2", 7002, "localhost", 6502);
 		Sequencer s2 = new Sequencer(false, 4001,8002,"235.1.10.1", "localhost",2);
 		r2.setSequencer(s2);
 		Thread t2 = new Thread(r2);
 		
-		ReplicaManager r3 = new ReplicaManager("3", 6003, "localhost", "Replica3");
+		ReplicaManager r3 = new ReplicaManager("3", 6003, "localhost", "Replica3", 7003, "localhost", 6503);
 		Sequencer s3 = new Sequencer(false, 4001,8003,"235.1.10.1", "localhost",1);
 		r3.setSequencer(s3);
 		Thread t3 = new Thread(r3);
@@ -197,4 +204,47 @@ public class ReplicaManager implements Runnable {
 		this.replicaProcess = process;
 	}
 	
+	public int getReplicaManagerPort() {
+		return replicaManagerPort;
+	}
+
+
+
+	public void setReplicaManagerPort(int replicaManagerPort) {
+		this.replicaManagerPort = replicaManagerPort;
+	}
+
+	public class ReplicaManagerUDPListener extends Thread {
+		
+		public void run() {
+			DatagramSocket socket = null;
+			String responseMessageString = "";
+			
+			try {
+				socket = new DatagramSocket(replicaManagerPort, InetAddress.getByName("localhost"));		
+				byte[] buffer = new byte[1000];
+				
+				while(true) {
+
+					DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
+					socket.receive(requestPacket);
+									
+					byte[] message = requestPacket.getData();
+					
+					restartReplica();
+					responseMessageString = "true"; 
+					message = responseMessageString.getBytes();
+					
+					
+					DatagramPacket responsePacket = new DatagramPacket(message, message.length, requestPacket.getAddress(), requestPacket.getPort());
+					socket.send(responsePacket);
+				}
+			} catch (Exception e) {
+				System.out.println("Replica Heartbeat: " +e.getMessage());
+			} finally {
+				if (socket != null) socket.close();
+			}
+		}
+
+	}
 }

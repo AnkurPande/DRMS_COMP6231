@@ -1,6 +1,7 @@
 package replica;
 
 import udp.UDPSender;
+
 import udp.UDPReciever;
 
 
@@ -27,28 +28,46 @@ public class ReplicaUDPListener extends Thread {
 		UDPReciever requestReciever = null;
 		try {
 			//Initialize sender to send response to front end
-			frontEndSender = new UDPSender(FRONTEND_UDP_PORT,FRONTEND_HOST);
+			frontEndSender = new UDPSender(4503,FRONTEND_HOST);
 			
-			//Initialize socket to receive response
 			requestReciever = new UDPReciever(server.getIpAddress(),server.getPortOfUDP());
-						
+			
 			while(true){
 				String receivedMessageString = requestReciever.recieveRequest();
 				
 				String[] requestParts = receivedMessageString.split(",");
 				
-				String[] parameters = requestParts[3].split(" : ");
+				String[] parameters = requestParts[3].split("-");
 				
-				if(requestParts[0] == "1"){
+				
+				
+				if(requestParts[2].trim().equals("1")){
+					
+
 					responseMessageString = "1,"+server.getReplicaID()+","+ requestParts[1]+",";
+					
+					
 					responseMessageString = responseMessageString + server.createAccount(parameters[0], parameters[1], parameters[2], parameters[3], parameters[4], parameters[5], parameters[6]);
+					
+					frontEndSender.sendOnly(responseMessageString);
+				}
+				
+				if(requestParts[2].trim().equals("2")) {
+					
+					responseMessageString = "1,"+server.getReplicaID()+","+ requestParts[1]+",";
+					
+					
+					responseMessageString = responseMessageString + server.reserveBook(parameters[0], parameters[1], parameters[2], parameters[3]);
+					
 					frontEndSender.sendOnly(responseMessageString);
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("UDP Exception");
+			
 		} finally {
-			requestReciever.close();
+			if(requestReciever != null) 
+				requestReciever.close();
+
 		}
 	}
 }

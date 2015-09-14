@@ -11,24 +11,31 @@ import udp.UDPSender;
 
 public class HeartBeatDispatcher extends Thread  {
 
-	public static int SLEEP_TIME = 20;
+	public static int SLEEP_TIME = 500;
 	
-	HashMap<Integer, Integer> REPLICA_PORTS = new HashMap<Integer, Integer>();
-	HashMap<Integer, String> REPLICA_IPS = new HashMap<Integer, String>();
+	int replicaPort;
+	String replicaIp;
+	String replicaId;
 		
 	HashMap<Integer, Integer> REPLICA_MANAGER_PORTS = new HashMap<Integer, Integer>();
 	HashMap<Integer, String> REPLICA_MANAGER_IPS = new HashMap<Integer, String>();
 	
 	ReplicaManager rm;
 	
+	ReplicaHeartBeat replicaHeartBeat;
+	
 	/**
 	 * Constructor setting variables
 	 * @return Nothing
 	 */
-	HeartBeatDispatcher(ReplicaManager rm) {		
+	HeartBeatDispatcher(ReplicaManager rm, int replicaPort, String replicaIp) {
+		
 		this.replicaManagerValues();
 		this.setRm(rm);
-	
+		this.replicaIp = replicaIp;
+		this.replicaPort = replicaPort;
+		this.replicaId = rm.getReplicaManagerID();
+		this.replicaHeartBeat = new ReplicaHeartBeat();
 	}
 	
 	
@@ -52,19 +59,15 @@ public class HeartBeatDispatcher extends Thread  {
 		
 		/* REPLICA Values */
 		
-		REPLICA_PORTS.put(1, 7001);
-		REPLICA_PORTS.put(2, 7002);
-		REPLICA_PORTS.put(3, 7003);
-		
-		REPLICA_IPS.put(1, "localhost");
-		REPLICA_IPS.put(2, "localhost");
-		REPLICA_IPS.put(3, "localhost");
+	
 		
 	}
 	
 	
 	@Override
 	public void run() {
+		
+		replicaHeartBeat.run();
 		this.manageReplicaManagerHeartBeat(); // manage replica manager heartbeats
 		this.manageReplicaHeartBeat(); // manage replica heartbeats
 	}
@@ -101,19 +104,13 @@ public class HeartBeatDispatcher extends Thread  {
 	 * @return Nothing
 	 */
 	public void manageReplicaHeartBeat() {
+
 		try {
 			while (true) {
 				Thread.sleep(SLEEP_TIME);
-				 @SuppressWarnings("rawtypes")
-				Iterator it = REPLICA_PORTS.entrySet().iterator();
-				    while (it.hasNext()) {
-				        @SuppressWarnings("rawtypes")
-						Map.Entry pair = (Map.Entry)it.next();			
-				        String address = REPLICA_IPS.get(pair.getKey()).toString();
-				        this.dispatchHeartBeatToReplica(pair.getKey().toString(), (int) pair.getValue(), address);
-				        //it.remove(); // avoids a ConcurrentModificationException
+				this.dispatchHeartBeatToReplica(replicaId, replicaPort, replicaIp);
 				        
-				    }		
+				    	
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -142,17 +139,17 @@ public class HeartBeatDispatcher extends Thread  {
 			
 		} catch (SocketTimeoutException e) {
 			
-//			if(rm.getSequencer().getCordinatorID() == Integer.parseInt(rmId)) {
-//				rm.electNewCoordinator();
-//			}
-//			
-//			rm.revoverReplicaManager(rmId);
-//			
-//			Multicaster multicaster = new Multicaster(4001,"234.1.2.1"); 
-//			
-//			String message = "cordinator" + rm.getSequencer().getCordinatorID();
-//			
-//			multicaster.sendMessage(message);
+			if(rm.getSequencer().getCordinatorID() == Integer.parseInt(rmId)) {
+				rm.electNewCoordinator();
+			}
+			
+			rm.revoverReplicaManager(rmId);
+			
+			Multicaster multicaster = new Multicaster(4001,"234.1.2.1"); 
+			
+			String message = "cordinator" + rm.getSequencer().getCordinatorID();
+			
+			multicaster.sendMessage(message);
 			
 			
 		} catch (IOException e) {
@@ -175,6 +172,7 @@ public class HeartBeatDispatcher extends Thread  {
 		String udpMessage = "isAlive";		
 		try {
 			REPLICA_RESPOSNE = sender.sendMessage(udpMessage);
+			System.out.println(REPLICA_RESPOSNE);
 			
 		} catch (SocketTimeoutException e) {
 			rm.restartReplica();
@@ -200,6 +198,43 @@ public class HeartBeatDispatcher extends Thread  {
 	public void setRm(ReplicaManager rm) {
 		this.rm = rm;
 	}
+	
+	public class ReplicaHeartBeat extends Thread {
+		
+		@Override
+		public void run() {
+			try {
+				while (true) {
+					Thread.sleep(SLEEP_TIME);
+					this.dispatchHeartBeatToReplica(replicaId, replicaPort, replicaIp);
+					        
+					    	
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		public void dispatchHeartBeatToReplica(String rId, int port, String address) {
+			@SuppressWarnings("unused")
+			String REPLICA_RESPOSNE = "";
+			UDPSender sender = new UDPSender(port, address);		
+			String udpMessage = "isAlive";		
+			try {
+				REPLICA_RESPOSNE = sender.sendMessage(udpMessage);
+				
+			} catch (SocketTimeoutException e) {
+				rm.restartReplica();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 	
+			
+			
+		}
+	
+	}
+	
 	
 }
 

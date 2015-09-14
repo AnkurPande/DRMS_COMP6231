@@ -25,7 +25,6 @@ public class LibraryServerReplica implements Runnable{
 	
 	private int heartBeatListenPort;
 	
-	private int rmPort;
 	
 	private String rmIpAddress;
 	
@@ -67,11 +66,11 @@ public class LibraryServerReplica implements Runnable{
 		public static final int DEFAULT_DURATION = 14;
 		
 		//UDP Ports to listen incoming request
-		public static final int REPLICA1_UDP_PORT = 4445;
+		public static final int REPLICA1_UDP_PORT = 8001;
 		
-		public static final int REPLICA2_UDP_PORT = 4447;
+		public static final int REPLICA2_UDP_PORT = 8002;
 		
-		public static final int REPLICA3_UDP_PORT = 4449;
+		public static final int REPLICA3_UDP_PORT = 8003;
 		
 		//heart beat port for incoming heart beat request
 		
@@ -81,13 +80,6 @@ public class LibraryServerReplica implements Runnable{
 		
 		public static final int REPLICA3_HEARTBEAT_PORT = 7003;
 		
-		//Heart beat reply port (RM ports where the heart beat response is forwarded)
-		
-		public static final int REPLICA1_HEARTBEAT_RM_PORT = 9001;
-		
-		public static final int REPLICA2_HEARTBEAT_RM_PORT = 9002;
-		
-		public static final int REPLICA3_HEARTBEAT_RM_PORT = 9003;
 		
 		//IP ADDRESS OF REPLICA
 		
@@ -119,11 +111,11 @@ public class LibraryServerReplica implements Runnable{
 	 */
 	public LibraryServerReplica(LibraryServerInfo info) {
 		
+		this.replicaID = info.getReplicaID();
 		this.nameOfServer = info.getServerName();
 		this.portOfUDP = info.getPortOfUDP();
 		this.ipAddress = info.getIpAddress();
 		this.heartBeatListenPort = info.getHeartbeatPort();
-		this.rmPort = info.getRmPort();
 		this.rmIpAddress = info.getRmIpAddress();
 		
 		
@@ -175,7 +167,7 @@ public class LibraryServerReplica implements Runnable{
 			
 			return ConstantValue.TRUE;
 		}
-		return ConstantValue.FALSE;
+		return ConstantValue.TRUE;
 	}
 
 	/**
@@ -572,13 +564,7 @@ public class LibraryServerReplica implements Runnable{
 		this.replicaID = replicaID;
 	}
 
-	public int getRmPort() {
-		return rmPort;
-	}
 
-	public void setRmPort(int rmPort) {
-		this.rmPort = rmPort;
-	}
 
 	public String getRmIpAddress() {
 		return rmIpAddress;
@@ -592,6 +578,7 @@ public class LibraryServerReplica implements Runnable{
 	
 	@Override
 	public void run() {
+		
 		this.socket = new ReplicaUDPListener(this);
 		this.heartBeatSocket = new Heartbeat(this);
 		heartBeatSocket.start();
@@ -602,18 +589,16 @@ public class LibraryServerReplica implements Runnable{
 	
 	public static void main(String args[]){
 		
-		LibraryServerInfo info1 = new LibraryServerInfo(1,
+		LibraryServerInfo info1 = new LibraryServerInfo(3,
 														ConstantValue.REPLICA3,
 														ConstantValue.REPLICA3_UDP_PORT,
 														ConstantValue.REPLICA3_IP_ADDRESS,
 														ConstantValue.REPLICA3_HEARTBEAT_PORT,
-														ConstantValue.REPLICA3_HEARTBEAT_RM_PORT,
 														ConstantValue.REPLICA3_RM_IP_ADDRESS);
 		
 		
 		
 		LibraryServerReplica concordia = new LibraryServerReplica(info1);
-		concordia.initializeTestingData();
 		
 		
 		Thread library = new Thread(concordia);

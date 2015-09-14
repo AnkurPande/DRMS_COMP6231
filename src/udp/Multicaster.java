@@ -18,7 +18,7 @@ public class Multicaster {
 		this.setTargetAddress(address);
 	}
 	
-	public String sendMessage(String message) {
+	public void sendMessage(String message) {
 		MulticastSocket socket = null;
 
 		try {
@@ -29,22 +29,15 @@ public class Multicaster {
 			DatagramPacket sendPacket = new DatagramPacket(udpMessage, udpMessage.length, host, this.getTargetPort());
 			socket.send(sendPacket);
 			
-			byte[] buffer = new byte[1000];
-			DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
-			socket.receive(receivedPacket);
 			
-			String result = new String(receivedPacket.getData());
-			
-			return result.trim();
 			
 		} catch (SocketException e) {
-			System.out.println("Socket: " + e.getMessage());
+			System.out.println("Multicaster Socket: " + e.getMessage());
 		} catch (IOException e) {
-			System.out.println("IO: " + e.getMessage());
+			System.out.println("Multicaster IO: " + e.getMessage());
 		} finally {
 			if (socket != null) socket.close();
 		}
-		return null;
 	}
 
 	public int getTargetPort() {

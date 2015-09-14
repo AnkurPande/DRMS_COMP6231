@@ -21,7 +21,6 @@ public class LibraryServerInfo {
 	private int heartbeatPort;
 	
 	/* Port of Replica Manager of this replica*/
-	private int rmPort;
 	
 	/*IP Address of Replica Manager of this Replica*/
 	private String rmIpAddress;
@@ -32,13 +31,12 @@ public class LibraryServerInfo {
 	 * @param name the name
 	 * @param port the port
 	 */
-	public LibraryServerInfo(int replicaID, String name, int port, String inetAddress,int heartbeat,int rmport, String rmIpAddress) {
+	public LibraryServerInfo(int replicaID, String name, int port, String inetAddress,int heartbeat, String rmIpAddress) {
 		this.replicaID = replicaID;
 		this.serverName = name;
 		this.portOfUDP = port;
 		this.setIpAddress(inetAddress);
 		this.heartbeatPort = heartbeat;
-		this.rmPort = rmport;
 		this.rmIpAddress = rmIpAddress;
 	}
 	
@@ -116,14 +114,7 @@ public class LibraryServerInfo {
 	}
 
 
-	public int getRmPort() {
-		return rmPort;
-	}
 
-
-	public void setRmPort(int rmPort) {
-		this.rmPort = rmPort;
-	}
 
 
 	public String getRmIpAddress() {
